@@ -1,0 +1,11 @@
+{
+    "name": "sfdx-project-template",
+    "author": "GitLab",
+    "scripts": {
+        "test:lwc": "lwc-jest",
+        "test:scratch": "sfdx force:apex:test:run --codecoverage --resultformat human --wait 10"
+    },
+    "devDependencies": {
+        "@salesforce/lwc-jest": "^0.4.14"
+    }
+}
