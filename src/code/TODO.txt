@@ -1,0 +1,39 @@
+
+
+
+Functions and modules to add:
+
+VQE-related
+- Get <P> for single Pauli
+- Get {<P_i>} for group of Paulis
+- Put the Paulis into groups {P_i}
+- Get <A> for full op
+- (all of the above take epsilon as input)
+
+QAOA-related
+- Collect N bitstrings
+- Get costs
+- Calculate QAOA cost functions
+   - Best cost
+   - Average cost
+
+Circuit & ansatzae
+- QUESTION: How much of this is already built-in?
+- QUESTION: Can we write code that *compiles circuits on the fly* (since we might need to do that in the meantime?)
+- FIRST VERSION - Make abstract circuit object (separate simulator if need be)
+- Parameterizable gate class
+- Parameterizable circuit class
+- Circuit layers [For layered C-A-B, A-B-C, etc…]
+- Methods for modifying circuit
+- Remove/add gates in arbitrary places
+- Techniques like adapt-VQE
+
+
+
+Outer optimization loop
+- Intel® MKL / Intel® DAL 
+- 
+
+
+
+
