@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/npsawaya/sw/hybrid-quantum/src/example.cpp
+example.hpp
+/Users/npsawaya/sw/hybrid-quantum/src/example.hpp
+
+/Users/npsawaya/sw/hybrid-quantum/src/example.hpp
+
+/Users/npsawaya/sw/hybrid-quantum/src/main.cpp
+iostream
+-
+example.hpp
+/Users/npsawaya/sw/hybrid-quantum/src/example.hpp
+

@@ -12,7 +12,7 @@ set(EXECUTABLE_NAME my_executable)
 add_subdirectory(src)
 
 # Add the third_party
-add_subdirectory(third_party)
+#***** add_subdirectory(third_party)
 
 # Create the main executable
 add_executable(
@@ -22,13 +22,12 @@ add_executable(
 )
 
 # Create the test executable
-add_executable(
-    ${EXECUTABLE_NAME}_test
+#*** add_executable(
+    #*** ${EXECUTABLE_NAME}_test
 
-    ${Tests_Srcs}
-)
-target_link_libraries(${EXECUTABLE_NAME}_test PUBLIC gtest)
-
+    #*** ${Tests_Srcs}
+#***)
+#*** target_link_libraries(${EXECUTABLE_NAME}_test PUBLIC gtest)
 
 # Resources
 file(COPY "${CMAKE_SOURCE_DIR}/data" DESTINATION .)
