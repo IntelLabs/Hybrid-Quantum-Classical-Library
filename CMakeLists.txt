@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS="-I$HOME/code/intel-aqcc/_inst/include")
 add_subdirectory(src)
 
 # Add the third_party
-add_subdirectory(third_party)
+#***** add_subdirectory(third_party)
 
 # Build tests
 #option(PACKAGE_TESTS "Build the tests" ON)
