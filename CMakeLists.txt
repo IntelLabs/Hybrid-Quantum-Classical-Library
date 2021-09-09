@@ -13,6 +13,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wformat -Wformat-security -Wparenthes
 # set installation paths
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/build/_inst)
 
+# Armadillo
+set(ARMADILLO_PREFIX armadillo-10.6.2)
+
 ## Set names
 #set(EXECUTABLE_NAME hqc)
 
@@ -22,9 +25,6 @@ set(CMAKE_CXX_FLAGS="-I$HOME/code/intel-aqcc/_inst/include")
 # Add the source directory
 add_subdirectory(src)
 
-# Add the third_party
-#***** add_subdirectory(third_party)
-
 # Build tests
 #option(PACKAGE_TESTS "Build the tests" ON)
 #if(PACKAGE_TESTS)
@@ -32,6 +32,9 @@ add_subdirectory(src)
     include(GoogleTest)
     add_subdirectory(utests)
 #endif()
+
+# Add the third_party
+add_subdirectory(third_party)
 
 ## Create the main executable
 #add_executable(
