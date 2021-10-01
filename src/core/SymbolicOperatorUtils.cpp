@@ -2,8 +2,6 @@
 
 #include <armadillo>
 
-//#include <gtest/gtest.h>
-
 #include <cassert>
 #include <iomanip>
 #include <iostream>
@@ -49,13 +47,6 @@ Vec2DMat SymbolicOperatorUtils::qubitwiseCommutation( const SymbolicOperator &sy
        ++iIter, ++row) {
     col = row+1;
     
-    /*
-    cout << "------" << endl;
-    string chars_pstring;
-    chars_pstring = SymbolicOperatorUtils::getCharString_pstring( iIter->first );
-    cout << "### " << chars_pstring << endl;
-    */
-
 
     for (auto jIter = next(iIter); jIter != symbop.op_sum.end();
          ++jIter, ++col) {
@@ -63,15 +54,6 @@ Vec2DMat SymbolicOperatorUtils::qubitwiseCommutation( const SymbolicOperator &sy
       pstring::const_iterator loc_i_end = iIter->first.end();
       pstring::const_iterator loc_j_end = jIter->first.end();
       
-      /* will never happen now
-      if (row==col) {
-        cout << "continue " << row << " " << col << endl;
-        continue;
-      }
-      */
-      
-      //cout << "---" << endl;
-
       // Loop over the two individual Pauli strings
       for (pstring::const_iterator ipstrIter = iIter->first.begin();
            ipstrIter != loc_i_end ; ++ipstrIter) {
@@ -104,14 +86,6 @@ Vec2DMat SymbolicOperatorUtils::qubitwiseCommutation( const SymbolicOperator &sy
     }
   }
 
-  /*
-  for (auto r = 0; r < M; ++r) {
-    for (auto c = 0; c < M; ++c) {
-      std::cout << " " << vmat[r][c];
-    }
-    std::cout << std::endl;
-  }
-  */
 
   return vmat;
  
@@ -123,13 +97,6 @@ Vec2DMat SymbolicOperatorUtils::qubitwiseCommutation( const SymbolicOperator &sy
 
 string SymbolicOperatorUtils::getCharString_pstring( const pstring& inp_pstring ) {
 
-  /*
-    for(int i=0;i<I_pstring.size();i++) {
-      cout << *I_pstring[i].second << *I_pstring[i].first << " ";
-    }
-    cout << endl;
-  */
-    
   string charstring = "";
 
   auto it = inp_pstring.begin();
