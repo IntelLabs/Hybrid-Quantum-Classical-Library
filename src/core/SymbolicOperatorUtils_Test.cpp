@@ -34,7 +34,6 @@ int main(int argc, char **argv) {
 
 TEST(QWCTests, Complete) {
   
-
   
   // Test less-than & greater-than ops for pstring
   /*
@@ -132,7 +131,7 @@ TEST(QWCTests, Complete) {
   // [Z1 Z2 Z3]
   // [Z1 Z2 Z3 Z4]
   // [X3 X4]
-  cout << "*******" << endl;
+  // cout << "*******" << endl;
   op.removeAllTerms();
   vector<string> inp_char;
   inp_char = {"X3","X4"};
@@ -161,9 +160,7 @@ TEST(QWCTests, Complete) {
      {0,0,0,0,1,1,0}};
   EXPECT_EQ( qwcmat , gold );
   /*
-   *
-   * Would then use op.getOrderedPStringList() to be able to related rows/cols to pstrings
-   * 
+   * Could next use op.getOrderedPStringList() to be able to relate rows/cols to pstrings
    * */
   
 

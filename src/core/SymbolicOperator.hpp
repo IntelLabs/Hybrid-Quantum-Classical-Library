@@ -25,7 +25,7 @@ class SymbolicOperator {
       Methods to add:
       - equals (assignment)
       - equality (comparison)
-      - Qubit-wise commutation (QWC) Graph
+      - Qubit-wise commutation (QWC) Graph [DONE]
       - Commutation graph
       - Anti-commutation graph
 
@@ -40,8 +40,6 @@ class SymbolicOperator {
   to do:
   - get the string addTerm to work. (do *not* do multi-term)
   - get scalar mult to work
-  - do assertions
-  - do the other tests above
 
 
    */

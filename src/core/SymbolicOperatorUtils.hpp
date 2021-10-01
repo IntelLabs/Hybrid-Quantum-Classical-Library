@@ -24,8 +24,6 @@ class SymbolicOperatorUtils {
   to do:
   - get the string addTerm to work. (do *not* do multi-term)
   - get scalar mult to work
-  - do assertions
-  - do the other tests above
 
    */
 
