@@ -174,33 +174,6 @@ TEST(IdentityTests, Complete) {
   op_id_2.addTerm(inp_id_2);
   ASSERT_TRUE(op_id_1 == op_id_2);
 
-  // Qubitwise Commutation
-  // SymbolicOperator op_qc;
-  // vector<string> vstr{"X0","Y1"};
-  // op_qc.addTerm(vstr);
-  // vector<string> inp_vecstr_qc{"Y0","X1"};
-  // op_qc.addTerm(inp_vecstr_qc);
-  // std::cout << "size of op_qc: " << op_qc.op_sum.size() << std::endl;
-
-  // for (auto& iter : op_qc.op_sum) {
-  //     std::cout << "size of op_qc pstring: " << iter.first.size() <<
-  //     std::endl;
-  // }
-
-  // Vec2DMat vmat = op_qc.qubitwiseCommutation();
-
-  // Z0 Y2 X2 -->
-
-  // Z0 X2 Y2 -->
-
-  // Mult by scalar
-  //
-
-  //
-  //
-  //
-
-
   // Test getOrderedPStringList
   SymbolicOperator op_izmaylov;
   op.removeAllTerms();
