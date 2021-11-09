@@ -29,6 +29,15 @@ set(Tests_Srcs
     PARENT_SCOPE
 )
 
+# inc headers
+list(APPEND INC_HEADERS
+    SymbolicOperator.hpp
+    SymbolicOperatorUtils.hpp
+)
+
+install(FILES ${INC_HEADERS}
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+
 file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.hpp *.cpp)
 
 set(BINARY SymbolicOperator)
