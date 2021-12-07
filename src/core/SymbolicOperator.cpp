@@ -4,12 +4,19 @@
 #include <iterator>
 #include <stdexcept>
 
+namespace hybrid {
+
+namespace quantum {
+
+namespace core {
+
 using std::string;
 using std::vector;
 using namespace std;
 
 // Add pauli string (as set of pairs)
-void SymbolicOperator::addTerm(pstring &inpp, ComplexDP k, bool check_validity) {
+void SymbolicOperator::addTerm(pstring &inpp, ComplexDP k,
+                               bool check_validity) {
 
   if (check_validity) {
 
@@ -199,10 +206,19 @@ SymbolicOperator SymbolicOperator::operator*(const SymbolicOperator &p_right) {
 }
 
 // // Multiplication by a scalar
-// SymbolicOperator operator* (ComplexDP inp_right) {
+// SymbolicOperator SymbolicOperator::operator*(const ComplexDP &inp_right) {
+//   // New object, copy from this
+//   SymbolicOperator newop;
+//   newop.op_sum = this->op_sum;
 
-//     // TO DO
+//   // Iterate through inp
+//   for (MapPString::const_iterator it = newop.op_sum.begin();
+//        it != newop.op_sum.end(); ++it) {
 
+//     newop.op_sum[it->first] *= inp_right * it->second;
+//   }
+
+//   return newop;
 // }
 
 bool SymbolicOperator::operator==(const SymbolicOperator &rhs) {
@@ -239,47 +255,26 @@ string SymbolicOperator::getCharString() {
   }
 
   return strP;
-
-
 }
 
 // Get number of terms
-int SymbolicOperator::getNumTerms() {
-  
-  return this->op_sum.size();
-
-}
+int SymbolicOperator::getNumTerms() { return this->op_sum.size(); }
 
 // Get ordered list of pstrings. Needed to interpret e.g. QWC graph.
 vector<pstring> SymbolicOperator::getOrderedPStringList() {
-  
+
   vector<pstring> listPStrings;
-  
-  for(auto it = this->op_sum.begin(); it!=this->op_sum.end(); ++it ) {
-    listPStrings.push_back( it->first );
+
+  for (auto it = this->op_sum.begin(); it != this->op_sum.end(); ++it) {
+    listPStrings.push_back(it->first);
   }
-  
+
   return listPStrings;
-
-  
 }
-
-
 
 // Remove all terms
-void SymbolicOperator::removeAllTerms() {
-  this->op_sum.clear();
-}
+void SymbolicOperator::removeAllTerms() { this->op_sum.clear(); }
 
-
-
-
-
-
-
-
-
-
-
-
-
+} // namespace core
+} // namespace quantum
+} // namespace hybrid

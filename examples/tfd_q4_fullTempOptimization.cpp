@@ -79,9 +79,8 @@
 // Define the number of qubits needed for compilation
 const int N = 4;
 qbit QubitReg[N];
+cbit CReg[N];
 
-/* Special global vector from QRT to get measurement results */
-extern std::vector<bool> ClassicalBitRegister;
 /* Special global vector from QRT to get state probabilities */
 extern std::vector<double> ProbabilityRegister;
 
@@ -154,7 +153,7 @@ quantum_kernel void tfdQ4_Z() {
 
   // Measurements of all the qubits
   for (Index = 0; Index < N; Index++)
-    MeasZ(QubitReg[Index]);
+    MeasZ(QubitReg[Index], CReg[Index]);
 }
 
 /*
@@ -215,7 +214,7 @@ quantum_kernel void tfdQ4_X() {
 
   // Measurements of all the qubits
   for (Index = 0; Index < N; Index++)
-    MeasZ(QubitReg[Index]);
+    MeasZ(QubitReg[Index], CReg[Index]);
 }
 
 /* 

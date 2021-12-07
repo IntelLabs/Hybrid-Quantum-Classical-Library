@@ -25,22 +25,30 @@
 #include <cassert>
 #include <iostream>
 #include <qrt0.hpp>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include <armadillo>
 #include <ensmallen.hpp>
 
+#include "SymbolicOperator.hpp"
+
+using namespace hybrid::quantum::core;
+
 const int N = 2;
 qbit QubitReg[N];
 cbit CReg[N];
 
-/* Special global vector from QRT to get measurement results */
-extern std::vector<bool> ClassicalBitRegister;
+const double FP_PI = 3.14159265359;
+const double FP_2PI = 6.28318530718;
+const double FP_PIby2 = 1.57079632679489661923;
+
 /* Special global vector from QRT to get state probabilities */
 extern std::vector<double> ProbabilityRegister;
 
 /* Special global array to hold dynamic parameters for quantum algorithm */
-quantum_shared_double_array QuantumVariableParams[4];
+quantum_shared_double_array QuantumVariableParams[4 + N * 2];
 
 static int steps_count = 0;
 
@@ -63,115 +71,136 @@ quantum_kernel void vqeQ2() {
   RY(QubitReg[0], QuantumVariableParams[2]);
   RY(QubitReg[1], QuantumVariableParams[3]);
 
+  // not part of ansatz
+  RY(QubitReg[0], QuantumVariableParams[4]);
+  RX(QubitReg[0], QuantumVariableParams[5]);
+
+  RY(QubitReg[1], QuantumVariableParams[6]);
+  RX(QubitReg[1], QuantumVariableParams[7]);
+
   // Measurements of all the qubits
   for (Index = 0; Index < N; Index++) {
     MeasZ(QubitReg[Index], CReg[Index]);
   }
 }
 
-quantum_kernel void vqeQ2_X() {
+double expectation_value(const pstring &pstr,
+                         const std::vector<double> ProbReg) {
+  arma::Row<double> I = {1, 1};
+  arma::Row<double> Z = {1, -1};
+  arma::rowvec rv(ProbReg);
+  double exp_val;
+  arma::Row<double> vR = {1};
 
-  // Index to loop over later
-  int Index = 0;
-
-  // Initialization of the qubits
-  for (Index = 0; Index < N; Index++) {
-    PrepZ(QubitReg[Index]);
+  for (const auto &ps : pstr) {
+    if (ps.second == 'X' || ps.second == 'Y' || ps.second == 'Z')
+      vR = arma::kron(vR, Z).as_row();
+    else
+      vR = arma::kron(vR, I).as_row();
   }
 
-  // Ansatz
-  RY(QubitReg[0], QuantumVariableParams[0]);
-  RY(QubitReg[1], QuantumVariableParams[1]);
+  exp_val = arma::sum((rv % vR).as_row());
 
-  CNOT(QubitReg[0], QubitReg[1]);
-
-  RY(QubitReg[0], QuantumVariableParams[2]);
-  RY(QubitReg[1], QuantumVariableParams[3]);
-
-  // Measurements of all the qubits
-  for (Index = 0; Index < N; Index++) {
-    H(QubitReg[Index]); // X-Basis to Z-Basis
-    MeasZ(QubitReg[Index], CReg[Index]);
-  }
+  return exp_val;
 }
 
-// Calculate expectation value on Z-basis
-double Z0Z1_expectation(std::vector<double> ProbReg) {
-  auto Z0Z1 = ProbReg[0] - ProbReg[1] - ProbReg[2] + ProbReg[3];
-  return Z0Z1;
-}
-
-// Calculate expectation value on Z-basis
-double Z0_expectation(std::vector<double> ProbReg) {
-  auto Z0 = ProbReg[0] + ProbReg[1] - ProbReg[2] - ProbReg[3];
-  return Z0;
-}
-
-// Calculate expectation value on Z-basis
-double Z1_expectation(std::vector<double> ProbReg) {
-  auto Z1 = ProbReg[0] - ProbReg[1] + ProbReg[2] - ProbReg[3];
-  return Z1;
-}
-
-double run_qkernel(const arma::mat &params) {
-  std::vector<double> ProbRegZ;
-  std::vector<double> ProbRegX;
+double run_qkernel(const arma::mat &params, SymbolicOperator &so) {
+  int basis_change_start = 4;
+  char first_basis_change;
+  double total_energy = 0.0;
 
   QuantumVariableParams[0] = 2 * params[0];
   QuantumVariableParams[1] = 2 * params[1];
   QuantumVariableParams[2] = 2 * params[2];
   QuantumVariableParams[3] = 2 * params[3];
 
-  vqeQ2();
-  for (auto j = 0; j < ProbabilityRegister.size(); j++) {
-    auto p = ProbabilityRegister[j];
-    if (p > 0) {
-      ProbRegZ.push_back(ProbabilityRegister[j]);
-      std::cout << j << " : " << ProbabilityRegister[j] << "\t";
-      if ((j + 1) % 8 == 0)
-        std::cout << "\n";
+  for (const auto &o : so.getOrderedPStringList()) {
+    // Find first basis change
+    for (const auto &ps : o) {
+      if (ps.second == 'X' || ps.second == 'Y' || ps.second == 'Z') {
+        first_basis_change = ps.second;
+        break;
+      }
     }
-  }
-  std::cout << "\n";
 
-  vqeQ2_X();
-  for (auto j = 0; j < ProbabilityRegister.size(); j++) {
-    auto p = ProbabilityRegister[j];
-    if (p > 0) {
-      ProbRegX.push_back(ProbabilityRegister[j]);
-      std::cout << j << " : " << ProbabilityRegister[j] << "\t";
-      if ((j + 1) % 8 == 0)
-        std::cout << "\n";
+    std::vector<double> ProbReg;
+
+    QuantumVariableParams[4] = 0;
+    QuantumVariableParams[5] = 0;
+    QuantumVariableParams[6] = 0;
+    QuantumVariableParams[7] = 0;
+    for (const auto &ps : o) {
+      if (ps.second == 'X') {
+        QuantumVariableParams[basis_change_start + 2 * ps.first] = FP_PIby2;
+        QuantumVariableParams[basis_change_start + 2 * ps.first + 1] = FP_PI;
+      } else if (ps.second == 'Y') {
+        QuantumVariableParams[basis_change_start + 2 * ps.first] = FP_PI;
+        QuantumVariableParams[basis_change_start + 2 * ps.first + 1] = FP_PIby2;
+      } else if (ps.second == 'Z') {
+        QuantumVariableParams[basis_change_start + 2 * ps.first] = 0;
+        QuantumVariableParams[basis_change_start + 2 * ps.first + 1] = 0;
+      } else if ((ps.second != 'X' || ps.second != 'Y' || ps.second != 'Z')) {
+        if (first_basis_change == 'X') {
+          QuantumVariableParams[basis_change_start + 2 * ps.first] = FP_PIby2;
+          QuantumVariableParams[basis_change_start + 2 * ps.first + 1] = FP_PI;
+        } else if (first_basis_change == 'Y') {
+          QuantumVariableParams[basis_change_start + 2 * ps.first] = FP_PI;
+          QuantumVariableParams[basis_change_start + 2 * ps.first + 1] =
+              FP_PIby2;
+        } else if (first_basis_change == 'Z') {
+          QuantumVariableParams[basis_change_start + 2 * ps.first] = 0;
+          QuantumVariableParams[basis_change_start + 2 * ps.first + 1] = 0;
+        }
+      }
     }
+
+    vqeQ2();
+    for (auto j = 0; j < ProbabilityRegister.size(); j++) {
+      auto p = ProbabilityRegister[j];
+      if (p > 0) {
+        ProbReg.push_back(ProbabilityRegister[j]);
+        std::cout << j << " : " << ProbabilityRegister[j] << "\t";
+        if ((j + 1) % 8 == 0)
+          std::cout << "\n";
+      }
+    }
+    std::cout << "\n";
+
+    double current_pstr_val =
+        so.op_sum[o].real() * expectation_value(o, ProbReg);
+    total_energy += current_pstr_val;
   }
-  std::cout << "\n";
-
-  double energy_Z0Z1 = Z0Z1_expectation(ProbRegZ);
-
-  double energy_Z0 = Z0_expectation(ProbRegX);
-
-  double energy_Z1 = Z1_expectation(ProbRegX);
-
-  double total_energy = 0.5 * energy_Z0Z1 + 0.5 * energy_Z0 + 0.25 * energy_Z1;
 
   return total_energy;
 }
 
 class EnergyOfAnsatz {
 public:
-  EnergyOfAnsatz(arma::mat &params) : params(params) {}
+  EnergyOfAnsatz(SymbolicOperator &so, arma::mat &params)
+      : so(so), params(params) {}
 
   double Evaluate(const arma::mat &theta) {
     steps_count++;
 
-    return run_qkernel(params);
+    return run_qkernel(params, so);
   }
 
 private:
   const arma::mat &params;
+  SymbolicOperator so;
 };
 
 int main() {
+
+  SymbolicOperator so;
+  pstring inp_y1{{0, 'Z'}, {1, 'Z'}};
+  so.addTerm(inp_y1, 0.5);
+  pstring inp_y2{{0, 'X'}, {1, 'I'}};
+  so.addTerm(inp_y2, 0.5);
+  pstring inp_y3{{0, 'I'}, {1, 'X'}};
+  so.addTerm(inp_y3, 0.25);
+  std::string charstring = so.getCharString();
+  std::cout << "Hamiltonian:\n" << charstring << "\n";
 
   // Using SPSA algorithm
   // Starting parameters
@@ -183,7 +212,7 @@ int main() {
   QuantumVariableParams[3] = params_spsa[3];
 
   // arbitrary function
-  EnergyOfAnsatz eoa(params_spsa);
+  EnergyOfAnsatz eoa(so, params_spsa);
 
   // initialize the optimization algorithm
   ens::SPSA opt_spsa(
@@ -215,21 +244,21 @@ int main() {
   QuantumVariableParams[3] = params_sa[3];
 
   // arbitrary function
-  EnergyOfAnsatz eoa_sa(params_sa);
+  EnergyOfAnsatz eoa_sa(so, params_sa);
 
   // initialize the optimization algorithm
   ens::SA<> opt_sa(
       ens::ExponentialSchedule(), /* coolingSchedule - Instantiated cooling
                                      schedule (default ExponentialSchedule). */
       1000000, /* maxIterations - Maximum number of iterations allowed (0
-                  indicates no limit). */
+indicates no limit). */
       1000.,   /* initT - Initial temperature. */
       1000,    /* initMoves - Number of initial iterations without changing
-                  temperature. */
+temperature. */
       100,     /* moveCtrlSweep - Sweeps per feedback move control. */
       1e-10,   /* tolerance - Tolerance to consider system frozen. */
       3,       /* maxToleranceSweep - Maximum sweeps below tolerance to consider
-                  system frozen. */
+system frozen. */
       1.5,     /* maxMoveCoef - Maximum move size. */
       0.5,     /* initMoveCoef - Initial move size. */
       0.3      /* gain - Proportional control in feedback move control. */
