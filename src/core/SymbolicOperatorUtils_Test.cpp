@@ -1,4 +1,4 @@
-#include "SymbolicOperatorUtils.cpp"
+#include "SymbolicOperatorUtils.hpp"
 
 // Still need to change name to "SymbolicOperator"
 
@@ -25,12 +25,7 @@ using Vec2DMat = std::vector<std::vector<int>>;
 using namespace std;
 using namespace arma;
 
-
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
-
+using namespace hybrid::quantum::core;
 
 TEST(QWCTests, Complete) {
   
