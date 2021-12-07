@@ -9,8 +9,6 @@ set(ARMADILLO_INCLUDE_DIR ${ARMADILLO_EXTRACT_DIR}/${ARMADILLO_PREFIX}/include)
 execute_process( COMMAND ${CMAKE_COMMAND} -E tar xzf ${ARMADILLO_URL}
                  WORKING_DIRECTORY ${ARMADILLO_EXTRACT_DIR})
 
-#add_subdirectory(${ARMADILLO_SRC_DIR} ${ARMADILLO_SRC_DIR})
-
 include(ExternalProject)
 ExternalProject_Add(armadillo
   URL               ${ARMADILLO_URL}

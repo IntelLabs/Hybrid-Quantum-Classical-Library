@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(my_project)
+project(hybrid-quantum)
 
 # C++ version required
 set(CMAKE_CXX_STANDARD 14)
@@ -16,39 +16,20 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/build/_inst)
 # Armadillo
 set(ARMADILLO_PREFIX armadillo-10.6.2)
 
-## Set names
-#set(EXECUTABLE_NAME hqc)
-
 # Add LLVM include directories
 set(CMAKE_CXX_FLAGS="-I$HOME/code/intel-aqcc/_inst/include")
 
-# Add the source directory
+# build source directory
 add_subdirectory(src)
 
-# Build tests
-#option(PACKAGE_TESTS "Build the tests" ON)
-#if(PACKAGE_TESTS)
+# build third_party directory
+add_subdirectory(third_party)
+
+# build tests
+option(PACKAGE_TESTS "Build the tests" ON)
+if(PACKAGE_TESTS)
     enable_testing()
     include(GoogleTest)
     add_subdirectory(utests)
-#endif()
+endif()
 
-# Add the third_party
-add_subdirectory(third_party)
-
-## Create the main executable
-#add_executable(
-#    ${EXECUTABLE_NAME}
-#    ${Complete_Srcs}
-#)
-#
-## Create the test executable
-#add_executable(
-#    ${EXECUTABLE_NAME}_test
-#    ${Tests_Srcs}
-#)
-#target_link_libraries(${EXECUTABLE_NAME}_test PUBLIC gtest)
-#target_include_directories(${EXECUTABLE_NAME} PUBLIC $HOME/code/intel-aqcc/_inst/include)
-
-## Resources
-#file(COPY "${CMAKE_SOURCE_DIR}/data" DESTINATION .)
