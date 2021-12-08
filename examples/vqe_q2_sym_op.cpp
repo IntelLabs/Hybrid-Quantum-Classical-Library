@@ -33,6 +33,7 @@
 #include <ensmallen.hpp>
 
 #include "SymbolicOperator.hpp"
+#include "SymbolicOperatorUtils.hpp"
 
 using namespace hybrid::quantum::core;
 
@@ -167,7 +168,7 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &so) {
     std::cout << "\n";
 
     double current_pstr_val =
-        so.op_sum[o].real() * expectation_value(o, ProbReg);
+        so.op_sum[o].real() * SymbolicOperatorUtils::getExpectValSglPauli(o, ProbReg);
     total_energy += current_pstr_val;
   }
 
