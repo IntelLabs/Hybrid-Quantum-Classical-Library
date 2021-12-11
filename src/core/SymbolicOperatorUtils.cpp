@@ -41,6 +41,10 @@ using Vec2DMat = std::vector<std::vector<int>>;
 using namespace std;
 using namespace arma;
 
+const double FP_PI = 3.14159265359;
+const double FP_2PI = 6.28318530718;
+const double FP_PIby2 = 1.57079632679489661923;
+
 // Two Pauli strings
 // If for *every* qubit id, either (at least one local op is I) or (both local
 // ops are same Pauli), then the two pauli strings are QWC.
@@ -122,19 +126,27 @@ SymbolicOperatorUtils::getCharString_pstring(const pstring &inp_pstring) {
   return charstring;
 }
 
-double SymbolicOperatorUtils::getExpectValSglPauli(
-    const pstring &pstr, const std::vector<double> ProbReg, double eps) {
+double
+SymbolicOperatorUtils::getExpectValSglPauli(const pstring &pstr,
+                                            const std::vector<double> ProbReg,
+                                            int num_qbits, double eps) {
   arma::Row<double> I = {1, 1};
   arma::Row<double> Z = {1, -1};
   arma::Row<double> vR = {1};
-  arma::rowvec rv(ProbReg);
   double exp_val;
 
-  for (const auto &ps : pstr) {
-    if (ps.second == 'X' || ps.second == 'Y' || ps.second == 'Z')
+  arma::rowvec rv(ProbReg);
+
+  for (auto i = 0; i < num_qbits; ++i) {
+    auto foundX = pstr.find(op_pair(i, 'X'));
+    auto foundY = pstr.find(op_pair(i, 'Y'));
+    auto foundZ = pstr.find(op_pair(i, 'Z'));
+
+    if (foundX != pstr.end() || foundY != pstr.end() || foundZ != pstr.end()) {
       vR = arma::kron(vR, Z).as_row();
-    else
+    } else {
       vR = arma::kron(vR, I).as_row();
+    }
   }
 
   exp_val = arma::sum((rv % vR).as_row());
@@ -144,7 +156,7 @@ double SymbolicOperatorUtils::getExpectValSglPauli(
 
 double SymbolicOperatorUtils::getExpectValSetOfPaulis(
     const std::vector<pstring> &v_pstr, const std::vector<double> ProbReg,
-    double eps) {
+    int num_qbits, double eps) {
   arma::Row<double> I = {1, 1};
   arma::Row<double> Z = {1, -1};
   arma::Row<double> vR = {1};
@@ -152,7 +164,7 @@ double SymbolicOperatorUtils::getExpectValSetOfPaulis(
   double exp_val;
 
   for (const auto &pstr : v_pstr) {
-    exp_val += getExpectValSglPauli(pstr, ProbReg);
+    exp_val += getExpectValSglPauli(pstr, ProbReg, num_qbits);
   }
 
   return exp_val;
@@ -160,7 +172,8 @@ double SymbolicOperatorUtils::getExpectValSetOfPaulis(
 
 double SymbolicOperatorUtils::getExpectVal(SymbolicOperator &symbop,
                                            const std::vector<double> ProbReg,
-                                           double eps, METHOD method) {
+                                           int num_qbits, double eps,
+                                           METHOD method) {
   arma::Row<double> I = {1, 1};
   arma::Row<double> Z = {1, -1};
   arma::Row<double> vR = {1};
@@ -168,10 +181,56 @@ double SymbolicOperatorUtils::getExpectVal(SymbolicOperator &symbop,
   double exp_val;
 
   for (const auto &pstr : symbop.getOrderedPStringList()) {
-    exp_val += symbop.op_sum[pstr].real() * getExpectValSglPauli(pstr, ProbReg);
+    exp_val += symbop.op_sum[pstr].real() *
+               getExpectValSglPauli(pstr, ProbReg, num_qbits);
   }
 
   return exp_val;
+}
+
+char SymbolicOperatorUtils::findFirstPauliStringBasis(const pstring &pstr) {
+  char first_pstr_basis;
+  // Find first basis change
+  for (const auto &ps : pstr) {
+    if (ps.second == 'X' || ps.second == 'Y' || ps.second == 'Z') {
+      first_pstr_basis = ps.second;
+      break;
+    }
+  }
+  return first_pstr_basis;
+}
+
+void SymbolicOperatorUtils::applyBasisChange(
+    const pstring &pstr, std::vector<double> &variable_params, int num_qbits) {
+
+  char first_pstr_basis = findFirstPauliStringBasis(pstr);
+  for (auto i = 0; i < num_qbits; ++i) {
+    auto foundX = pstr.find(op_pair(i, 'X'));
+    auto foundY = pstr.find(op_pair(i, 'Y'));
+    auto foundZ = pstr.find(op_pair(i, 'Z'));
+
+    if (foundX != pstr.end()) {
+      variable_params.push_back(FP_PIby2);
+      variable_params.push_back(FP_PI);
+    } else if (foundY != pstr.end()) {
+      variable_params.push_back(FP_PI);
+      variable_params.push_back(FP_PIby2);
+    } else if (foundZ != pstr.end()) {
+      variable_params.push_back(0);
+      variable_params.push_back(0);
+    } else {
+      if (first_pstr_basis == 'X') {
+        variable_params.push_back(FP_PIby2);
+        variable_params.push_back(FP_PI);
+      } else if (first_pstr_basis == 'Y') {
+        variable_params.push_back(FP_PI);
+        variable_params.push_back(FP_PIby2);
+      } else if (first_pstr_basis == 'Z') {
+        variable_params.push_back(0);
+        variable_params.push_back(0);
+      }
+    }
+  }
 }
 
 } // namespace core

@@ -188,9 +188,7 @@ quantum_kernel void tfdQ4() {
 
 double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
   // start point in the global parameter array corresponding to the basis change
-  int basis_change_start = 4;
-  // find the first basis change in the Pauli string
-  char first_basis_change;
+  int basis_change_variable_param_start_indx = 4;
   // total cost
   double total_cost = 0.0;
 
@@ -203,14 +201,6 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
   for (const auto &pstr : symbop.getOrderedPStringList()) {
     std::vector<double> ProbReg;
 
-    // find first basis change
-    for (const auto &op : pstr) {
-      if (op.second == 'X' || op.second == 'Y' || op.second == 'Z') {
-        first_basis_change = op.second;
-        break;
-      }
-    }
-
     QuantumVariableParams[4] = 0;
     QuantumVariableParams[5] = 0;
     QuantumVariableParams[6] = 0;
@@ -220,35 +210,16 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
     QuantumVariableParams[10] = 0;
     QuantumVariableParams[11] = 0;
 
-    // loop through each Pauli operator in the Pauli string
-    for (const auto &op : pstr) {
-      // Update the global parameters array for the additional layers
-      // used to enable mapping of X-basis to Z-basis or Y-basis to
-      // Z-basis
-      if (op.second == 'X') {
-        QuantumVariableParams[basis_change_start + 2 * op.first] = FP_PIby2;
-        QuantumVariableParams[basis_change_start + 2 * op.first + 1] = FP_PI;
-      } else if (op.second == 'Y') {
-        QuantumVariableParams[basis_change_start + 2 * op.first] = FP_PI;
-        QuantumVariableParams[basis_change_start + 2 * op.first + 1] = FP_PIby2;
-      } else if (op.second == 'Z') {
-        QuantumVariableParams[basis_change_start + 2 * op.first] = 0;
-        QuantumVariableParams[basis_change_start + 2 * op.first + 1] = 0;
-      } else if ((op.second != 'X' || op.second != 'Y' || op.second != 'Z')) {
-        if (first_basis_change == 'X') {
-          QuantumVariableParams[basis_change_start + 2 * op.first] = FP_PIby2;
-          QuantumVariableParams[basis_change_start + 2 * op.first + 1] = FP_PI;
-        } else if (first_basis_change == 'Y') {
-          QuantumVariableParams[basis_change_start + 2 * op.first] = FP_PI;
-          QuantumVariableParams[basis_change_start + 2 * op.first + 1] =
-              FP_PIby2;
-        } else if (first_basis_change == 'Z') {
-          QuantumVariableParams[basis_change_start + 2 * op.first] = 0;
-          QuantumVariableParams[basis_change_start + 2 * op.first + 1] = 0;
-        }
-      }
+    // Update the global parameters array for the additional layers
+    // used to enable mapping of X-basis to Z-basis or Y-basis to
+    // Z-basis
+    std::vector<double> variable_params;
+    variable_params.reserve(N * 2);
+    SymbolicOperatorUtils::applyBasisChange(pstr, variable_params, N);
+
+    for (auto indx = 0; indx < variable_params.size(); ++indx) {
+      QuantumVariableParams[basis_change_variable_param_start_indx + indx] = variable_params[indx];
     }
-    std::cout << "\n";
 
     // performing the experiment, and storing the data in ProbReg
     tfdQ4();
@@ -267,7 +238,7 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
 
     // calculate the expectation value
     double current_pstr_val =
-        symbop.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg);
+        symbop.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg, N);
 
     total_cost += current_pstr_val;
   }
@@ -340,28 +311,28 @@ int main() {
 
     // construct object
     SymbolicOperator symbop;
-    pstring Xa1{{0, 'X'}, {1, 'I'}, {2, 'I'}, {3, 'I'}};
+    pstring Xa1{{0, 'X'}};
     symbop.addTerm(Xa1, 1);
-    pstring Xa2{{0, 'I'}, {1, 'X'}, {2, 'I'}, {3, 'I'}};
+    pstring Xa2{{1, 'X'}};
     symbop.addTerm(Xa2, 1);
-    pstring Xb1{{0, 'I'}, {1, 'I'}, {2, 'X'}, {3, 'I'}};
+    pstring Xb1{{2, 'X'}};
     symbop.addTerm(Xb1, 1);
-    pstring Xb2{{0, 'I'}, {1, 'I'}, {2, 'I'}, {3, 'X'}};
+    pstring Xb2{{3, 'X'}};
     symbop.addTerm(Xb2, 1);
 
-    pstring Za{{0, 'Z'}, {1, 'Z'}, {2, 'I'}, {3, 'I'}};
+    pstring Za{{0, 'Z'}, {1, 'Z'}};
     symbop.addTerm(Za, 1.60);
-    pstring Zb{{0, 'I'}, {1, 'I'}, {2, 'Z'}, {3, 'Z'}};
+    pstring Zb{{2, 'Z'}, {3, 'Z'}};
     symbop.addTerm(Zb, 1.60);
 
-    pstring Xa1b1{{0, 'X'}, {1, 'I'}, {2, 'X'}, {3, 'I'}};
+    pstring Xa1b1{{0, 'X'}, {2, 'X'}};
     symbop.addTerm(Xa1b1, -pow(beta, -1.48));
-    pstring Xa2b2{{0, 'I'}, {1, 'X'}, {2, 'I'}, {3, 'X'}};
+    pstring Xa2b2{{1, 'X'}, {3, 'X'}};
     symbop.addTerm(Xa2b2, -pow(beta, -1.48));
 
-    pstring Za1b1{{0, 'Z'}, {1, 'I'}, {2, 'Z'}, {3, 'I'}};
+    pstring Za1b1{{0, 'Z'}, {2, 'Z'}};
     symbop.addTerm(Za1b1, -pow(beta, -1.48));
-    pstring Za2b2{{0, 'I'}, {1, 'Z'}, {2, 'I'}, {3, 'Z'}};
+    pstring Za2b2{{1, 'Z'}, {3, 'Z'}};
     symbop.addTerm(Za2b2, -pow(beta, -1.48));
 
     std::cout << "SymbolicOperator Object: " << symbop.getCharString() << "\n";

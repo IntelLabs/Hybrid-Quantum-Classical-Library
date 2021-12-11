@@ -18,6 +18,7 @@
 #define __HYBRID_QUANTUM_CORE_SYMBOLIC_OPERATOR_UTILS_DOT_HPP__
 
 #include "SymbolicOperator.hpp"
+
 #include <complex>
 #include <map>
 #include <set> // These are ordered
@@ -75,9 +76,10 @@ public:
   /// @param method - Method based on Qubit properties
   /// @return double
   ///
-  static double getExpectVal(SymbolicOperator &symbop,
-                      const std::vector<double> ProbReg, double eps = 0.0,
-                      METHOD method = METHOD::DEFAULT);
+  static double
+  getExpectVal(SymbolicOperator &symbop,
+               const std::vector<double> ProbReg,
+               int num_qubits, double eps = 0.0, METHOD method = METHOD::DEFAULT);
 
   ///
   /// @brief Get the Expect Val Set Of Paulis object
@@ -87,9 +89,10 @@ public:
   /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
-  static double getExpectValSetOfPaulis(const std::vector<pstring> &pstr,
-                                 const std::vector<double> ProbReg,
-                                 double eps = 0.0);
+  static double getExpectValSetOfPaulis(
+      const std::vector<pstring> &pstr,
+      const std::vector<double> ProbReg,
+      int num_qubits, double eps = 0.0);
 
   ///
   /// @brief Get the Expect Val Sgl Pauli object
@@ -99,10 +102,16 @@ public:
   /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
-  static double getExpectValSglPauli(const pstring &pstr,
-                              const std::vector<double> ProbReg,
-                              double eps = 0.0);
+  static double getExpectValSglPauli(
+      const pstring &pstr,
+      const std::vector<double> ProbReg,
+      int num_qubits, double eps = 0.0);
 
+  static void applyBasisChange(const pstring &pstr,
+                              std::vector<double> &variable_params, int
+                              num_qbits);
+
+  static char findFirstPauliStringBasis(const pstring &pstr);
 }; // end of class SymbolicOperator
 
 } // namespace core
