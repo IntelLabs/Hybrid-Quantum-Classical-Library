@@ -243,11 +243,11 @@ TEST(ExpectationValueTests, Complete) {
   pstring inp_y1{{0, 'Z'}, {1, 'Z'}};
   so.addTerm(inp_y1, 0.5);
 
-  std::vector<double> ProbReg {3.00843e-09,	0.153676, 0.846324, 2.01993e-08};
-  std::vector<double> expected{-0.49999998839613502};
+  std::vector<double> ProbReg {0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected{-0.050000000000000003};
   std::vector<double> actual;
   for(const auto& pstr : so.getOrderedPStringList()) {
-    actual.push_back(so.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg));
+    actual.push_back(so.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg, 2));
   }
   ASSERT_TRUE(expected.size() == actual.size());
   for (int i = 0; i < expected.size(); ++i) {
@@ -256,14 +256,14 @@ TEST(ExpectationValueTests, Complete) {
 
   // test 2
   SymbolicOperator so_1;
-  pstring inp_y2{{0, 'X'}, {1, 'I'}};
+  pstring inp_y2{{0, 'X'}};
   so_1.addTerm(inp_y2, 0.5);
 
-  std::vector<double> ProbReg_1 {2.52206e-07, 8.74031e-06, 0.0186338, 0.981357};
-  std::vector<double> expected_1 {-0.499990903742};
+  std::vector<double> ProbReg_1 {0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected_1 {0.050000000000000003};
   std::vector<double> actual_1;
   for(const auto& pstr : so_1.getOrderedPStringList()) {
-    actual_1.push_back(so_1.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_1));
+    actual_1.push_back(so_1.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_1, 2));
   }
   ASSERT_TRUE(expected_1.size() == actual_1.size());
   for (int i = 0; i < expected_1.size(); ++i) {
@@ -272,14 +272,14 @@ TEST(ExpectationValueTests, Complete) {
 
   // test 3
   SymbolicOperator so_2;
-  pstring inp_y3{{0, 'I'}, {1, 'X'}};
+  pstring inp_y3{{1, 'X'}};
   so_2.addTerm(inp_y3, 0.25);
 
-  std::vector<double> ProbReg_2 {4.38888e-07, 0.776707, 1.15853e-07, 0.223292};
-  std::vector<double> expected_2 {-0.24999961131475001};
+  std::vector<double> ProbReg_2 {0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected_2 {-0.025000000000000008};
   std::vector<double> actual_2;
   for(const auto& pstr : so_2.getOrderedPStringList()) {
-    actual_2.push_back(so_2.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_2));
+    actual_2.push_back(so_2.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_2, 2));
   }
   ASSERT_TRUE(expected_2.size() == actual_2.size());
   for (int i = 0; i < expected_2.size(); ++i) {
@@ -287,11 +287,12 @@ TEST(ExpectationValueTests, Complete) {
   }
 
   // test 4
-  std::vector<pstring> v_pstr{{{0, 'Z'}, {1, 'Z'}}, {{0, 'X'}, {1, 'I'}}, {{0, 'I'}, {1, 'X'}}};
-  std::vector<double> ProbReg_3 {4.38888e-07, 0.776707, 1.15853e-07, 0.223292};
-  std::vector<double> expected_3 {-0.99999779918900011};
+  std::vector<pstring> v_pstr{{{0, 'Z'}, {1, 'Z'}}, {{0, 'X'}}, {{1, 'X'}}};
+
+  std::vector<double> ProbReg_3 {0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected_3 {-0.10000000000000003};
   std::vector<double> actual_3;
-  actual_3.push_back(SymbolicOperatorUtils::getExpectValSetOfPaulis(v_pstr, ProbReg_3));
+  actual_3.push_back(SymbolicOperatorUtils::getExpectValSetOfPaulis(v_pstr, ProbReg_3, 2));
   ASSERT_TRUE(expected_3.size() == actual_3.size());
   for (int i = 0; i < expected_3.size(); ++i) {
     EXPECT_DOUBLE_EQ(expected_3[i], actual_3[i]);
@@ -303,10 +304,10 @@ TEST(ExpectationValueTests, Complete) {
   symbop.addTerm(inp_y2, 0.5);
   symbop.addTerm(inp_y3, 0.25);
 
-  std::vector<double> ProbReg_4 {4.38888e-07, 0.776707, 1.15853e-07, 0.223292};
-  std::vector<double> expected_4 {-0.24999928827975004};
+  std::vector<double> ProbReg_4 {0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected_4 {-0.025000000000000008};
   std::vector<double> actual_4;
-  actual_4.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg_4));
+  actual_4.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg_4, 2));
 
   ASSERT_TRUE(expected_4.size() == actual_4.size());
   for (int i = 0; i < expected_4.size(); ++i) {
