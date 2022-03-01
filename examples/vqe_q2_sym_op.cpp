@@ -37,6 +37,23 @@
 
 using namespace hybrid::quantum::core;
 
+/* Floating point values for PI and its multiples */
+const double FP_PI = 3.14159265358979323846;
+const double FP_2PI = 6.28318530717958647692;
+
+const double FP_PIby2 = 1.57079632679489661923;
+const double FP_PIby4 = 0.78539816339744830962;
+const double FP_PIby8 = 0.39269908169872415481;
+const double FP_PIby16 = 0.19634954084936207740;
+
+const double FP_3PIby2 = 4.71238898038468985769;
+const double FP_5PIby2 = 7.85398163397448309615;
+const double FP_7PIby2 = 10.9955742875642763346;
+
+const double FP_3PIby4 = 2.35619449019234492885;
+const double FP_5PIby4 = 3.92699081698724154808;
+const double FP_7PIby4 = 5.49778714378213816731;
+
 const int N = 2;
 qbit QubitReg[N];
 cbit CReg[N];
@@ -243,3 +260,5 @@ system frozen. */
 
   return 0;
 }
+
+
