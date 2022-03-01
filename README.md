@@ -25,7 +25,7 @@ $ (Optional) git checkout <branch-name>
 ```
 $ mkdir build
 $ cd build
-$ cmake -DLLVM_ENABLE_PROJECTS="clang;lld" -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Quantum "Unix Makefiles" ../llvm
+$ cmake -DCMAKE_INSTALL_PREFIX=<path to build dir>/build/_inst -DLLVM_ENABLE_PROJECTS="clang;lld" -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Quantum "Unix Makefiles" ../llvm
 $ make -j30
 ```
 
