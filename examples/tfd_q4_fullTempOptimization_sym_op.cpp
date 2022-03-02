@@ -78,6 +78,23 @@
 
 using namespace hybrid::quantum::core;
 
+/* Floating point values for PI and its multiples */
+const double FP_PI = 3.14159265358979323846;
+const double FP_2PI = 6.28318530717958647692;
+
+const double FP_PIby2 = 1.57079632679489661923;
+const double FP_PIby4 = 0.78539816339744830962;
+const double FP_PIby8 = 0.39269908169872415481;
+const double FP_PIby16 = 0.19634954084936207740;
+
+const double FP_3PIby2 = 4.71238898038468985769;
+const double FP_5PIby2 = 7.85398163397448309615;
+const double FP_7PIby2 = 10.9955742875642763346;
+
+const double FP_3PIby4 = 2.35619449019234492885;
+const double FP_5PIby4 = 3.92699081698724154808;
+const double FP_7PIby4 = 5.49778714378213816731;
+
 // ----------------------------------------------------------------------------------------
 // ALL QUANTUM HELPER CODE
 // ----------------------------------------------------------------------------------------
@@ -87,31 +104,25 @@ const int N = 4;
 qbit QubitReg[N];
 cbit CReg[N];
 
-const double FP_PI = 3.14159265359;
-const double FP_2PI = 6.28318530718;
-const double FP_PIby2 = 1.57079632679;
-
-/* Special global vector from QRT to get state probabilities */
+// Special global vector from QRT to get state probabilities
 extern std::vector<double> ProbabilityRegister;
 
-/* Special global array to hold dynamic parameters for quantum algorithm */
-/* alpha1, alpha2, gamma1, gamma2 is the order of the variational angles used in
- * here */
+// Special global array to hold dynamic parameters for quantum algorithm
+// alpha1, alpha2, gamma1, gamma2 is the order of the variational angles used in
+// here
 quantum_shared_double_array QuantumVariableParams[N + N * 2];
 
 static int steps_count = 0;
 
-/*
-When using the Intel Quantum Simulator (IQS) at the lowest level, it is
-necessary to decide how to calculate the cost function based on the results
-returned. If using the full state vector, then only one experiment is required
-per iteration.
-
-In this script, we will be using the probabilities corresponding to each of the
-basis states (e.g. 0000, 1010) These are returned simply by calculating the
-probability corresponding to each of the state vector element and stored in the
-special array ProbabilityRegister.
-*/
+// When using the Intel Quantum Simulator (IQS) at the lowest level, it is
+// necessary to decide how to calculate the cost function based on the results
+// returned. If using the full state vector, then only one experiment is
+// required per iteration.
+//
+// In this script, we will be using the probabilities corresponding to each of
+// the basis states (e.g. 0000, 1010) These are returned simply by calculating
+// the probability corresponding to each of the state vector element and stored
+// in the special array ProbabilityRegister.
 
 //
 // First kind of experiment that needs to be run per iteration of optimization.
@@ -218,7 +229,8 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
     SymbolicOperatorUtils::applyBasisChange(pstr, variable_params, N);
 
     for (auto indx = 0; indx < variable_params.size(); ++indx) {
-      QuantumVariableParams[basis_change_variable_param_start_indx + indx] = variable_params[indx];
+      QuantumVariableParams[basis_change_variable_param_start_indx + indx] =
+          variable_params[indx];
     }
 
     // performing the experiment, and storing the data in ProbReg
@@ -238,7 +250,8 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
 
     // calculate the expectation value
     double current_pstr_val =
-        symbop.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg, N);
+        symbop.op_sum[pstr].real() *
+        SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg, N);
 
     total_cost += current_pstr_val;
   }
@@ -289,8 +302,8 @@ private:
 };
 
 int main() {
-  // H = X3 + X2 + X1 + X0 + 1.60 (Z3Z2 + Z1Z0) - (beta ^ -1.48((X1X3 + X0X2)+(Z1Z3 +
-  // Z0Z2)))
+  // H = X3 + X2 + X1 + X0 + 1.60 (Z3Z2 + Z1Z0) - (beta ^ -1.48((X1X3 +
+  // X0X2)+(Z1Z3 + Z0Z2)))
 
   // resetting steps count
   steps_count = 0;
@@ -379,3 +392,4 @@ int main() {
 
   return 0;
 }
+
