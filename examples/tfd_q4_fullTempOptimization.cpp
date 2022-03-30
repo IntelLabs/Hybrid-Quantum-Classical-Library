@@ -66,8 +66,6 @@
 #include <math.h> // to use pow()
 #include <vector>
 
-#include <qrt0.hpp>
-
 // to perform the minimization of TFD generation cost funtion
 
 #include <armadillo>
