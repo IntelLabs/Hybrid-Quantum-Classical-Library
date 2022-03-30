@@ -24,7 +24,6 @@
 #include "../../clang/include/clang/Quantum/quintrinsics.h"
 #include <cassert>
 #include <iostream>
-#include <qrt0.hpp>
 #include <vector>
 
 #include <armadillo>
