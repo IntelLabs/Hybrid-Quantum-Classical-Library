@@ -1,33 +1,24 @@
 # Set sources
 include(GoogleTest)
-include(${CMAKE_SOURCE_DIR}/macros.cmake)
 set(coredir core)
 set(LIB_NAME "hybrid_quantum")
 
 set(Root_Srcs
-    #${Srcdir}/example.hpp
-    #${Srcdir}/example.cpp
-    ${coredir}/SymbolicOperator.hpp
-    ${coredir}/SymbolicOperator.cpp
-    ${coredir}/SymbolicOperatorUtils.hpp
-    ${coredir}/SymbolicOperatorUtils.cpp
+    SymbolicOperator.hpp
+    SymbolicOperator.cpp
+    SymbolicOperatorUtils.hpp
+    SymbolicOperatorUtils.cpp
 )
 
 set(Complete_Srcs
     ${Root_Srcs}
-    #${Srcdir}/main.cpp
-
-    PARENT_SCOPE
 )
 
 # Test sources
 set(Tests_Srcs
     ${Root_Srcs}
-    #${Srcdir}/example_test.cpp
-    ${coredir}/SymbolicOperator_Test.cpp
-    ${coredir}/SymbolicOperatorUtils_Test.cpp
-
-    PARENT_SCOPE
+    SymbolicOperator_Test.cpp
+    SymbolicOperatorUtils_Test.cpp
 )
 
 # inc headers
@@ -39,19 +30,15 @@ list(APPEND INC_HEADERS
 install(FILES ${INC_HEADERS}
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
-file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.hpp *.cpp)
-
-set(BINARY SymbolicOperator)
-include_directories(${CMAKE_BINARY_DIR}/third_party/googletest-release-1.11.0/googletest/include ${CMAKE_BINARY_DIR}/third_party/${ARMADILLO_PREFIX}/include)
-add_library(${LIB_NAME} SHARED ${SOURCES})
+include_directories(${CMAKE_BINARY_DIR}/third_party/${ARMADILLO_PREFIX}/include)
+add_library(${LIB_NAME} SHARED ${Root_Srcs})
 
 install(TARGETS ${LIB_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
-enable_testing()
-
-#package_add_test_with_libraries(example_test example_test.cpp ${BINARY}_lib "core")
-package_add_test_with_libraries(SymbolicOperator_Test SymbolicOperator_Test.cpp ${LIB_NAME} "core")
-package_add_test_with_libraries(SymbolicOperatorUtils_Test SymbolicOperatorUtils_Test.cpp ${LIB_NAME} "core")
-
+if(PACKAGE_TESTS)
+  enable_testing()
+  include_directories(${CMAKE_BINARY_DIR}/third_party/googletest-release-1.11.0/googletest/include)
+  package_add_test_with_libraries(SymbolicOperator_Test "${Tests_Srcs}" ${LIB_NAME} "core")
+endif()
