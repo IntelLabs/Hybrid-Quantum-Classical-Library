@@ -1,2 +1,0 @@
-/Users/npsawaya/sw/hybrid-quantum/src/build/CMakeFiles/rebuild_cache.dir
-/Users/npsawaya/sw/hybrid-quantum/src/build/CMakeFiles/edit_cache.dir

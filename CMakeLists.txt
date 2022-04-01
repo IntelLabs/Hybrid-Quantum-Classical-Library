@@ -10,14 +10,13 @@ set(CMAKE_C_COMPILER ${CMAKE_C_COMPILER})
 set(CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wformat -Wformat-security -Wparentheses")
 
-# set installation paths
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/build/_inst)
-
 # Armadillo
 set(ARMADILLO_PREFIX armadillo-10.6.2)
 
-# Add LLVM include directories
-set(CMAKE_CXX_FLAGS="-I$HOME/code/intel-aqcc/_inst/include")
+function(package_add_test_with_libraries TESTNAME FILES LIBRARIES TEST_WORKING_DIRECTORY)
+    add_executable(${TESTNAME} ${FILES})
+    target_link_libraries(${TESTNAME} gtest gmock gtest_main ${LIBRARIES})
+endfunction()
 
 # build source directory
 add_subdirectory(src)
@@ -26,7 +25,7 @@ add_subdirectory(src)
 add_subdirectory(third_party)
 
 # build tests
-option(PACKAGE_TESTS "Build the tests" ON)
+option(PACKAGE_TESTS "Build the tests" OFF)
 if(PACKAGE_TESTS)
     enable_testing()
     include(GoogleTest)

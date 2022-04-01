@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2021 Intel Corporation.
+// Copyright 2021-2022 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -119,3 +119,4 @@ public:
 } // namespace hybrid
 
 #endif // __HYBRID_QUANTUM_CORE_SYMBOLIC_OPERATOR_UTILS_DOT_HPP__
+
