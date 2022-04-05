@@ -41,10 +41,6 @@ using Vec2DMat = std::vector<std::vector<int>>;
 using namespace std;
 using namespace arma;
 
-const double FP_PI = 3.14159265359;
-const double FP_2PI = 6.28318530718;
-const double FP_PIby2 = 1.57079632679489661923;
-
 // Two Pauli strings
 // If for *every* qubit id, either (at least one local op is I) or (both local
 // ops are same Pauli), then the two pauli strings are QWC.
@@ -191,11 +187,13 @@ double SymbolicOperatorUtils::getExpectVal(SymbolicOperator &symbop,
 char SymbolicOperatorUtils::findFirstPauliStringBasis(const pstring &pstr) {
   char first_pstr_basis;
   // Find first basis change
-  for (const auto &ps : pstr) {
-    if (ps.second == 'X' || ps.second == 'Y' || ps.second == 'Z') {
-      first_pstr_basis = ps.second;
-      break;
+  if(!pstr.empty()) {
+    first_pstr_basis = pstr.begin()->second;
+    if (first_pstr_basis != 'X' && first_pstr_basis != 'Y' && first_pstr_basis != 'Z') {
+      throw std::invalid_argument("Char must be in {X,Y,Z}");
     }
+  } else {
+    throw std::logic_error("Empty Pauli string set");
   }
   return first_pstr_basis;
 }
