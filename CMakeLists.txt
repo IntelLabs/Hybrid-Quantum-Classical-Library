@@ -29,6 +29,9 @@ option(PACKAGE_TESTS "Build the tests" OFF)
 if(PACKAGE_TESTS)
     enable_testing()
     include(GoogleTest)
-    add_subdirectory(utests)
+
+    if (EnableCodeCoverage)
+        add_compile_options(-fprofile-arcs -ftest-coverage)
+    endif()
 endif()
 
