@@ -35,7 +35,7 @@ void SymbolicOperator::addTerm(pstring &inpp, ComplexDP k,
                                bool check_validity) {
 
   if (check_validity) {
-
+    // TODO: Add more validation
     // Iterate through set
     pstring::iterator it = inpp.begin();
 
@@ -64,7 +64,7 @@ void SymbolicOperator::addTerm(vector<string> &vecstr, ComplexDP k) {
 
   for (int i = 0; i < vecstr.size(); i++) {
 
-    string rawstr = vecstr[i];
+    string rawstr(vecstr[i]);
     pstring p = {processLocCharString(rawstr)};
     SymbolicOperator locop;
     locop.addTerm(p);
@@ -87,7 +87,7 @@ void SymbolicOperator::addIdentTerm(ComplexDP k) {
 op_pair SymbolicOperator::processLocCharString(std::string inp) {
 
   // Must be 'X', 'Y', or 'Z'
-  char sglP = inp[0];
+  char sglP (inp[0]);
   if (sglP != 'X' && sglP != 'Y' && sglP != 'Z') {
     throw std::invalid_argument("Char must be in {X,Y,Z}");
   }
