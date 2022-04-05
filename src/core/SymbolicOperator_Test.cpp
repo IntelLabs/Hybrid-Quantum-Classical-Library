@@ -220,9 +220,44 @@ TEST(IdentityTests, Complete) {
       {{1,'Z'},{2,'Z'},{3,'Z'},{4,'Z'}},
       {{3,'X'},{4,'X'}} 
       }));
-      
-      
+
+  // Incorrect Pauli String - A0
+  SymbolicOperator op_A0;
+  vector<string> v_inp = {"A0"};
+  EXPECT_THROW(op_A0.addTerm(v_inp, 2.0), invalid_argument);
     
+  // Z0 * X0
+  SymbolicOperator op_Z0;
+  pstring inp_Z0 = {{0, 'Z'}};
+  op_Z0.addTerm(inp_Z0, 1.0, false);
+  SymbolicOperator op_X0;
+  pstring inp_X0 = {{0, 'X'}};
+  op_X0.addTerm(inp_X0);
+  SymbolicOperator op_Z0X0 = op_Z0 * op_X0;
+  charstring = op_Z0X0.getCharString();
+  EXPECT_EQ(charstring, "0.000000 + 1.000000 i [ Y0 ]\n");
+  // InEquality Test
+  ASSERT_FALSE(op_Z0 == op_X0);
+  EXPECT_EQ(op_Z0X0.getNumTerms(), 1);
+
+  // Z0 * Y0
+  SymbolicOperator op_Y0;
+  pstring inp_Y0 = {{0, 'Y'}};
+  op_Y0.addTerm(inp_Y0, 1.0, false);
+  SymbolicOperator op_Z0Y0 = op_Z0 * op_Y0;
+  charstring = op_Z0Y0.getCharString();
+  EXPECT_EQ(charstring, "0.000000 + -1.000000 i [ X0 ]\n");
+
+  // Z1 * X1
+  SymbolicOperator op_Z1;
+  pstring inp_Z1 = {{1, 'Z'}};
+  op_Z1.addTerm(inp_Z1, 0.0, false);
+  SymbolicOperator op_X1;
+  pstring inp_X1 = {{1, 'X'}};
+  op_X1.addTerm(inp_X1);
+  SymbolicOperator op_Z1X1 = op_Z1 * op_X1;
+  charstring = op_Z1X1.getCharString();
+  EXPECT_EQ(charstring, "0.0");
 
 /*
 Y1 Y2 X3 X4

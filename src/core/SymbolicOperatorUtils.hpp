@@ -38,6 +38,10 @@ using Vec2DMat = std::vector<std::vector<int>>;
 
 enum class METHOD { DEFAULT = 0, QWC };
 
+const double FP_PI = 3.14159265359;
+const double FP_2PI = 6.28318530718;
+const double FP_PIby2 = 1.57079632679489661923;
+
 ///
 /// @brief Utility methods for Symbolic Operator Class
 ///

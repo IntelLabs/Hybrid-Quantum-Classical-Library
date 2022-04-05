@@ -180,10 +180,72 @@ TEST(QWCTests, Complete) {
 
 }
 
+TEST(UtilTests, Complete) {
+  string charstring;
 
+  // Z0 Y1
+  pstring inp_Z0Y1 = {{0, 'Z'}, {1, 'Y'}};
+  charstring = SymbolicOperatorUtils::getCharString_pstring(inp_Z0Y1);
+  EXPECT_EQ(charstring, "Z0 Y1 ");
 
+  // X0 Y1 Z2
+  pstring inp_X0Y1Z2 = {{0, 'X'}, {1, 'Y'}, {2, 'Z'}};
+  EXPECT_EQ(SymbolicOperatorUtils::findFirstPauliStringBasis(inp_X0Y1Z2), 'X');
 
+  // Y0 X1 Z2
+  pstring inp_Y0X1Z2 = {{0, 'Y'}, {1, 'X'}, {2, 'Z'}};
+  EXPECT_EQ(SymbolicOperatorUtils::findFirstPauliStringBasis(inp_Y0X1Z2), 'Y');
 
+  // Z0 Y1 X2
+  pstring inp_Z0Y1X2 = {{0, 'Z'}, {1, 'Y'}, {2, 'X'}};
+  EXPECT_EQ(SymbolicOperatorUtils::findFirstPauliStringBasis(inp_Z0Y1X2), 'Z');
+
+  // Empty Pauli string
+  pstring inp_empty = {};
+  EXPECT_THROW(SymbolicOperatorUtils::findFirstPauliStringBasis(inp_empty), std::logic_error);
+
+  // Incorrect Pauli string
+  pstring inp_incorrect = {{0, 'A'}};
+  EXPECT_THROW(SymbolicOperatorUtils::findFirstPauliStringBasis(inp_incorrect), std::invalid_argument);
+
+  std::vector<double> variable_params;
+  std::vector<double> e_variable_params{0.0, 0.0, FP_PI, FP_PIby2};
+  int num_qbits = 2;
+
+  SymbolicOperatorUtils::applyBasisChange(inp_Z0Y1, variable_params, num_qbits);
+  EXPECT_EQ(variable_params, e_variable_params);
+
+  variable_params = {};
+  e_variable_params = {FP_PIby2, FP_PI, FP_PI, FP_PIby2};
+  pstring inp_X0Y1 = {{0, 'X'}, {1, 'Y'}};
+  SymbolicOperatorUtils::applyBasisChange(inp_X0Y1, variable_params, num_qbits);
+  EXPECT_EQ(variable_params, e_variable_params);
+
+  variable_params = {};
+  e_variable_params = {FP_PI, FP_PIby2, FP_PIby2, FP_PI};
+  pstring inp_Y0X1 = {{0, 'Y'}, {1, 'X'}};
+  SymbolicOperatorUtils::applyBasisChange(inp_Y0X1, variable_params, num_qbits);
+  EXPECT_EQ(variable_params, e_variable_params);
+
+  variable_params = {};
+  e_variable_params = {FP_PIby2, FP_PI, FP_PIby2, FP_PI};
+  pstring inp_X1 = {{1, 'X'}};
+  SymbolicOperatorUtils::applyBasisChange(inp_X1, variable_params, num_qbits);
+  EXPECT_EQ(variable_params, e_variable_params);
+
+  variable_params = {};
+  e_variable_params = {FP_PI, FP_PIby2, FP_PI, FP_PIby2};
+  pstring inp_Y1 = {{1, 'Y'}};
+  SymbolicOperatorUtils::applyBasisChange(inp_Y1, variable_params, num_qbits);
+  EXPECT_EQ(variable_params, e_variable_params);
+
+  variable_params = {};
+  e_variable_params = {0.0, 0.0, 0.0, 0.0};
+  pstring inp_Z1 = {{1, 'Z'}};
+  SymbolicOperatorUtils::applyBasisChange(inp_Z1, variable_params, num_qbits);
+  EXPECT_EQ(variable_params, e_variable_params);
+
+}
 
 
 
