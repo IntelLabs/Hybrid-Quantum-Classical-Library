@@ -157,7 +157,7 @@ double SymbolicOperatorUtils::getExpectValSetOfPaulis(
   arma::Row<double> Z = {1, -1};
   arma::Row<double> vR = {1};
   arma::rowvec rv(ProbReg);
-  double exp_val;
+  double exp_val = 0.0;
 
   for (const auto &pstr : v_pstr) {
     exp_val += getExpectValSglPauli(pstr, ProbReg, num_qbits);
@@ -174,7 +174,7 @@ double SymbolicOperatorUtils::getExpectVal(SymbolicOperator &symbop,
   arma::Row<double> Z = {1, -1};
   arma::Row<double> vR = {1};
   arma::rowvec rv(ProbReg);
-  double exp_val;
+  double exp_val = 0.0;
 
   for (const auto &pstr : symbop.getOrderedPStringList()) {
     exp_val += symbop.op_sum[pstr].real() *
