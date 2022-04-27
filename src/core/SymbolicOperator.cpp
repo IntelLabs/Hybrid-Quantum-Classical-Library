@@ -72,8 +72,11 @@ void SymbolicOperator::addTerm(vector<string> &vecstr, ComplexDP k) {
     newop = newop * locop;
   }
 
-  pstring locstring = newop.op_sum.begin()->first;
-  this->op_sum[locstring] += k;
+  auto iter = newop.op_sum.begin();
+  if(iter != newop.op_sum.end()) {
+    pstring locstring = newop.op_sum.begin()->first;
+    this->op_sum[locstring] += k;
+  }
 }
 
 // Add identity term with arbitrary coefficient
