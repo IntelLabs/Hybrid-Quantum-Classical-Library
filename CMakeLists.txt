@@ -11,12 +11,15 @@ set(CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wformat -Wformat-security -Wparentheses")
 
 # Armadillo
-set(ARMADILLO_PREFIX armadillo-10.6.2)
+set(ARMADILLO_PREFIX armadillo-11.0.1)
 
 function(package_add_test_with_libraries TESTNAME FILES LIBRARIES TEST_WORKING_DIRECTORY)
     add_executable(${TESTNAME} ${FILES})
     target_link_libraries(${TESTNAME} gtest gmock gtest_main ${LIBRARIES})
 endfunction()
+
+# Add ARMA_USE_WRAPPER
+add_definitions(-DARMA_USE_WRAPPER)
 
 # build source directory
 add_subdirectory(src)
