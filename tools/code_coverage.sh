@@ -1,9 +1,10 @@
 #!/bin/bash
+
 #Run code coverage on GNU build
 rm -rf build_codecoverage
 mkdir build_codecoverage
 cd build_codecoverage
-CXX=g++ CXXFLAGS="-fprofile-arcs -ftest-coverage" cmake -DCMAKE_INSTALL_PREFIX=/data/apkulkar/code/applications.quantum.hybrid-quantum/build/_inst -DPACKAGE_TESTS=ON -DEnableCodeCoverage=ON ..
+CXX=g++ CXXFLAGS="-fprofile-arcs -ftest-coverage" cmake -DCMAKE_INSTALL_PREFIX=./build/_inst -DPACKAGE_TESTS=ON -DEnableCodeCoverage=ON ..
 make -j 20
 ./src/core/SymbolicOperator_Test
 cd ..
