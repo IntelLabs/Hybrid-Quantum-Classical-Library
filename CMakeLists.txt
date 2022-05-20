@@ -104,3 +104,13 @@ if(PACKAGE_TESTS)
     endif()
 endif()
 
+# include licensing
+set(LIC_FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
+  ${CMAKE_CURRENT_SOURCE_DIR}/third-party-programs.txt
+)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
+     DESTINATION ${CMAKE_BINARY_DIR}/licensing)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/third-party-programs.txt
+     DESTINATION ${CMAKE_BINARY_DIR}/licensing)

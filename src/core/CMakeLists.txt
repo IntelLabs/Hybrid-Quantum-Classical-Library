@@ -1,7 +1,7 @@
 # Set sources
 include(GoogleTest)
 set(coredir core)
-set(LIB_NAME "hybrid_quantum")
+set(LIB_NAME "hqcl")
 
 set(Root_Srcs
     SymbolicOperator.hpp
@@ -27,15 +27,13 @@ list(APPEND INC_HEADERS
     SymbolicOperatorUtils.hpp
 )
 
-install(FILES ${INC_HEADERS}
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
-
 include_directories(${CMAKE_BINARY_DIR}/third_party/${ARMADILLO_PREFIX}/include)
 add_library(${LIB_NAME} SHARED ${Root_Srcs})
+set_target_properties(${LIB_NAME} PROPERTIES PUBLIC_HEADER "${INC_HEADERS}")
 
 install(TARGETS ${LIB_NAME}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+    LIBRARY DESTINATION ${CMAKE_BINARY_DIR}/lib
+    PUBLIC_HEADER DESTINATION ${CMAKE_BINARY_DIR}/include)
 
 if(PACKAGE_TESTS)
   enable_testing()
