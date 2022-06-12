@@ -31,6 +31,9 @@ include_directories(${CMAKE_BINARY_DIR}/third_party/${ARMADILLO_PREFIX}/include)
 add_library(${LIB_NAME} SHARED ${Root_Srcs})
 set_target_properties(${LIB_NAME} PROPERTIES PUBLIC_HEADER "${INC_HEADERS}")
 
+file(COPY ${INC_HEADERS}
+     DESTINATION ${CMAKE_BINARY_DIR}/include)
+
 install(TARGETS ${LIB_NAME}
     LIBRARY DESTINATION ${CMAKE_BINARY_DIR}/lib
     PUBLIC_HEADER DESTINATION ${CMAKE_BINARY_DIR}/include)
