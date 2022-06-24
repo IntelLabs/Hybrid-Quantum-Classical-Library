@@ -36,38 +36,10 @@ using ComplexDP = std::complex<double>;
 using MapPString = std::map<pstring, ComplexDP>;
 using Vec2DMat = std::vector<std::vector<int>>;
 
+///
+/// @brief Symbolic Operator Class
+///
 class SymbolicOperator {
-
-  /*
-   *
-   * To compile: g++ -std=c++0x SymbolicOperator_Test.cpp
-   *
-   * Eventually need:
-   * -- Commutation graph
-   * -- Qubit-wise commutation graph
-   *
-
-      Methods to add:
-      - equals (assignment)
-      - equality (comparison)
-      - Qubit-wise commutation (QWC) Graph [DONE]
-      - Commutation graph
-      - Anti-commutation graph
-
-      External methods to add:
-      -
-
-      Done:
-      - addition
-      - multiplication
-      - string-based input
-
-  to do:
-  - get the string addTerm to work. (do *not* do multi-term)
-  - get scalar mult to work
-
-
-   */
 
 public:
   ///
@@ -76,8 +48,7 @@ public:
   ///@param inpp - Pauli string
   ///@param k - Arbitrary coefficient
   ///@param check_validity - For this constructor, we do not allow >1 op on same
-  ///qubit id (wouldn't
-  /// even know what order.) Instead, may use the other constructor
+  /// qubit id
   ///
   void addTerm(pstring &inpp, ComplexDP k = 1, bool check_validity = true);
 
@@ -173,7 +144,7 @@ public:
   ///
   SymbolicOperator operator*(const SymbolicOperator &p_right);
 
-  ///
+#ifndef DOXYGEN_SKIP
   ///@brief Overloaded '*' to multiply SymbolicOperator with arbitrary
   ///coefficient
   ///TODO
@@ -181,6 +152,7 @@ public:
   ///@return SymbolicOperator
   ///
   // SymbolicOperator operator*(const ComplexDP &inp_right);
+#endif /* DOXYGEN_SKIP */
 
   ///
   ///@brief Check for equality between two SymbolicOperator objects
@@ -191,9 +163,19 @@ public:
   ///
   bool operator==(const SymbolicOperator &rhs);
 
+  ///
+  /// @brief Zero Threshold Value
+  ///
   double zero_thresh = 1.0e-11;
 
+  ///
+  /// @brief Stores the pauli term and it's coefficient
+  ///
   MapPString op_sum; // The data structure
+
+  ///
+  /// @brief Stores qubit-wise commutation graph
+  ///
   Vec2DMat adj_matrix;
 }; // end of class SymbolicOperator
 

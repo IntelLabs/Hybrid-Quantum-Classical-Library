@@ -76,6 +76,7 @@ public:
   ///
   /// @param symbop - SymbolicOperator object
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
+  /// @param num_qubits - Number of qubits
   /// @param eps - Desired precision (epsilon)
   /// @param method - Method based on Qubit properties
   /// @return double
@@ -90,6 +91,7 @@ public:
   ///
   /// @param pstr - List of Pauli Strings
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
+  /// @param num_qubits - Number of qubits
   /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
@@ -103,6 +105,7 @@ public:
   ///
   /// @param pstr - Pauli String
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
+  /// @param num_qubits - Number of qubits
   /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
@@ -111,10 +114,23 @@ public:
       const std::vector<double> ProbReg,
       int num_qubits, double eps = 0.0);
 
+  ///
+  /// @brief Applies the basis change to the given Pauli string
+  ///
+  /// @param pstr - Pauli String
+  /// @param variable_params - Probabilities obtained from the state vector amplitudes
+  /// @param num_qubits - Desired precision (epsilon)
+  ///
   static void applyBasisChange(const pstring &pstr,
                               std::vector<double> &variable_params, int
-                              num_qbits);
+                              num_qubits);
 
+  ///
+  /// @brief Finds the basis of the first Pauli string
+  ///
+  /// @param pstr - Pauli String
+  /// @return char
+  ///
   static char findFirstPauliStringBasis(const pstring &pstr);
 }; // end of class SymbolicOperator
 
