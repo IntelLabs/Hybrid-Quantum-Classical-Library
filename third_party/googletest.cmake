@@ -24,7 +24,7 @@ mark_as_advanced(
 # set_target_properties(gmock PROPERTIES FOLDER third_party)
 # set_target_properties(gmock_main PROPERTIES FOLDER third_party)
 
-#option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
 add_subdirectory(${GOOGLETEST_EXTRACT_DIR}/${GOOGLETEST_PREFIX} ${GOOGLETEST_EXTRACT_DIR}/${GOOGLETEST_PREFIX})
 
 
