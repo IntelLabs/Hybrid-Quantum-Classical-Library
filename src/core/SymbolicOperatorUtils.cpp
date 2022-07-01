@@ -17,6 +17,8 @@
 #include "SymbolicOperatorUtils.hpp"
 
 #include <armadillo>
+#include <boost/graph/sequential_vertex_coloring.hpp>
+#include <boost/graph/adjacency_list.hpp>
 
 #include <cassert>
 #include <iomanip>
