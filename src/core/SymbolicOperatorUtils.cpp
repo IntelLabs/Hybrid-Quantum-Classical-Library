@@ -43,6 +43,13 @@ using Vec2DMat = std::vector<std::vector<int>>;
 using namespace std;
 using namespace arma;
 
+typedef boost::adjacency_list<boost::listS, boost::vecS, boost::undirectedS> Graph;
+typedef boost::graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+typedef int vertices_size_type;
+typedef boost::property_map<Graph, boost::vertex_index_t>::const_type vertex_index_map;
+typedef std::pair<int, int> Edge;
+
+
 // Two Pauli strings
 // If for *every* qubit id, either (at least one local op is I) or (both local
 // ops are same Pauli), then the two pauli strings are QWC.
@@ -106,6 +113,39 @@ SymbolicOperatorUtils::qubitwiseCommutation(const SymbolicOperator &symbop) {
 
   return vmat;
 }
+
+
+vector<int> 
+SymbolicOperatorUtils::getGroupsQWC(const Vec2DMat &qwcgraph) {
+  // Based on https://valelab4.ucsf.edu/svn/3rdpartypublic/boost/libs/graph/doc/sequential_vertex_coloring.html
+  
+  int numNodes = qwcgraph.size();
+
+  // Transfer Vec2DMat to an edge list
+  vector<Edge> edges;
+  for( int i=0; i < qwcgraph.size(); i++ ) {
+    for( int j=0; j < i; j++ ) {
+      if (qwcgraph[i][j]==1) {
+        edges.push_back( Edge(i,j) );
+      }
+    }
+  }
+
+  // Define the graph
+  Graph g(edges.begin(), edges.end(), numNodes );
+  
+
+  //vector<int> qubitWiseCommutingGroups;
+  std::vector<vertices_size_type> color_vec(boost::num_vertices(g));
+  boost::iterator_property_map<vertices_size_type*, vertex_index_map> color(&color_vec.front(), get(boost::vertex_index, g));
+  vertices_size_type num_colors = sequential_vertex_coloring(g, color);
+
+  //return qubitWiseCommutingGroups;
+  return color_vec;
+  
+}
+
+
 
 string
 SymbolicOperatorUtils::getCharString_pstring(const pstring &inp_pstring) {

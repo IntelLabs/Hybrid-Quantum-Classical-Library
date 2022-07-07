@@ -19,6 +19,7 @@ set(Tests_Srcs
     ${Root_Srcs}
     SymbolicOperator_Test.cpp
     SymbolicOperatorUtils_Test.cpp
+    # BoostTest_Test.cpp
 )
 
 # inc headers
@@ -42,4 +43,5 @@ if(PACKAGE_TESTS)
   enable_testing()
   include_directories(${CMAKE_BINARY_DIR}/third_party/googletest-release-1.11.0/googletest/include)
   package_add_test_with_libraries(SymbolicOperator_Test "${Tests_Srcs}" ${LIB_NAME} "core")
+  # package_add_test_with_libraries(BoostTest_Test "${Tests_Srcs}" ${LIB_NAME} "core")
 endif()

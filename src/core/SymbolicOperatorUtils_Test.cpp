@@ -161,7 +161,7 @@ TEST(QWCTests, Complete) {
   op.addTerm(inp_char,1.0);
   qwcmat = SymbolicOperatorUtils::qubitwiseCommutation(op);
 //  cout << qwcmat << endl;
-  Vec2DMat gold = 
+  Vec2DMat goldMat = 
     {{0,0,1,1,1,1,0},
      {0,0,1,1,1,1,0},
      {1,1,0,0,0,0,0},
@@ -169,16 +169,19 @@ TEST(QWCTests, Complete) {
      {1,1,0,0,0,0,1},
      {1,1,0,0,0,0,1},
      {0,0,0,0,1,1,0}};
-  EXPECT_EQ( qwcmat , gold );
+  EXPECT_EQ( qwcmat , goldMat );
+  
+  vector<int> coloring = SymbolicOperatorUtils::getGroupsQWC(qwcmat);
+  vector<int> goldColoring = {0,0,1,1,1,1,0};
+  EXPECT_EQ( coloring, goldColoring );
   /*
-   * Could next use op.getOrderedPStringList() to be able to relate rows/cols to pstrings
+   * Would next use op.getOrderedPStringList() to be able to relate rows/cols to pstrings
    * */
   
 
-
-
-
 }
+
+
 
 TEST(UtilTests, Complete) {
   string charstring;

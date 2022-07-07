@@ -56,12 +56,20 @@ class SymbolicOperatorUtils {
 
 public:
   ///
-  /// @brief Checks for Qubit-wise commutation
+  /// @brief Get graph describing qubit-wise commutation
   ///
   /// @param symbop - SymbolicOperator object
   /// @return Vec2DMat
   ///
   static Vec2DMat qubitwiseCommutation(const SymbolicOperator &symbop);
+
+  ///
+  /// @brief Get groups that qubit-wise commute
+  ///
+  /// @param qwcgraph - Vec2DMat object
+  /// @return vector<int>
+  ///
+  static std::vector<int> getGroupsQWC(const Vec2DMat &qwcgraph);
 
   ///
   /// @brief Get the string version of pstring object
