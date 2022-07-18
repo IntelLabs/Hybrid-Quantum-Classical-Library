@@ -51,14 +51,17 @@
 /// enviromnment or production environment
 //===----------------------------------------------------------------------===//
 /// Production mode
-// #include <clang/Quantum/quintrinsics.h>
+#include <clang/Quantum/quintrinsics.h>
 
 // AUTHOR : Shavindra Premaratne (August 26th 2021)
 // Update : Comments added throughout to clarify the intentions behind code
 // blocks (08/27/2021)
 
 /// Development mode
-#include "../../clang/include/clang/Quantum/quintrinsics.h"
+// #include "../../clang/include/clang/Quantum/quintrinsics.h"
+
+/// Quantum Runtime Library APIs
+#include <quantum.hpp>
 
 #include <cassert> // to assert the size of the Probability Register
 #include <fstream> // to write to files
@@ -66,7 +69,7 @@
 #include <math.h> // to use pow()
 #include <vector>
 
-// to perform the minimization of TFD generation cost funtion
+// to perform the minimization of TFD generation cost function
 
 #include <armadillo>
 #include <ensmallen.hpp>
@@ -75,8 +78,7 @@
 #include "SymbolicOperatorUtils.hpp"
 
 using namespace hybrid::quantum::core;
-
-const double FP_PIby2 = 1.57079632679489661923;
+using namespace iqsdk;
 
 // ----------------------------------------------------------------------------------------
 // ALL QUANTUM HELPER CODE
@@ -87,13 +89,10 @@ const int N = 4;
 qbit QubitReg[N];
 cbit CReg[N];
 
-// Special global vector from QRT to get state probabilities
-extern std::vector<double> ProbabilityRegister;
-
 // Special global array to hold dynamic parameters for quantum algorithm
 // alpha1, alpha2, gamma1, gamma2 is the order of the variational angles used in
 // here
-quantum_shared_double_array QuantumVariableParams[N + N * 2];
+double QuantumVariableParams[N + N * 2];
 
 static int steps_count = 0;
 
@@ -174,13 +173,10 @@ quantum_kernel void tfdQ4() {
 
   RY(QubitReg[3], QuantumVariableParams[10]);
   RX(QubitReg[3], QuantumVariableParams[11]);
-
-  // Measurements of all the qubits
-  for (Index = 0; Index < N; Index++)
-    MeasZ(QubitReg[Index], CReg[Index]);
 }
 
-double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
+double run_qkernel(Full_State_Simulator &iqs_device, const arma::mat &params,
+                   SymbolicOperator &symbop, QWCMap &m_qwc_groups) {
   // start point in the global parameter array corresponding to the basis change
   int basis_change_variable_param_start_indx = 4;
   // total cost
@@ -191,9 +187,19 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
   QuantumVariableParams[2] = 2 * params[2];
   QuantumVariableParams[3] = 2 * params[3];
 
-  // loop through all the Pauli strings present in the SymbolicOperator object
-  for (const auto &pstr : symbop.getOrderedPStringList()) {
+  for (auto &m_qwc_group : m_qwc_groups) {
     std::vector<double> ProbReg;
+
+    std::vector<double> variable_params;
+    variable_params.reserve(N * 2);
+
+    SymbolicOperatorUtils::applyBasisChange(m_qwc_group.second, variable_params,
+                                            N);
+
+    std::vector<std::reference_wrapper<qbit>> qids;
+    for (int qubit = 0; qubit < N; ++qubit) {
+      qids.push_back(std::ref(QubitReg[qubit]));
+    }
 
     QuantumVariableParams[4] = 0;
     QuantumVariableParams[5] = 0;
@@ -204,13 +210,6 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
     QuantumVariableParams[10] = 0;
     QuantumVariableParams[11] = 0;
 
-    // Update the global parameters array for the additional layers
-    // used to enable mapping of X-basis to Z-basis or Y-basis to
-    // Z-basis
-    std::vector<double> variable_params;
-    variable_params.reserve(N * 2);
-    SymbolicOperatorUtils::applyBasisChange(pstr, variable_params, N);
-
     for (auto indx = 0; indx < variable_params.size(); ++indx) {
       QuantumVariableParams[basis_change_variable_param_start_indx + indx] =
           variable_params[indx];
@@ -218,24 +217,11 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
 
     // performing the experiment, and storing the data in ProbReg
     tfdQ4();
-    std::cout << "Probability Register Size: " << ProbabilityRegister.size()
-              << "\n";
-    for (auto j = 0; j < ProbabilityRegister.size(); j++) {
-      auto p = ProbabilityRegister[j];
-      if (p > 0) {
-        ProbReg.push_back(ProbabilityRegister[j]);
-        std::cout << j << " : " << ProbabilityRegister[j] << "\t";
-        if ((j + 1) % 8 == 0)
-          std::cout << "\n";
-      }
-    }
-    std::cout << "\n";
 
-    // calculate the expectation value
-    double current_pstr_val =
-        symbop.op_sum[pstr].real() *
-        SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg, N);
+    ProbReg = iqs_device.get_probabilities(qids);
 
+    double current_pstr_val = SymbolicOperatorUtils::getExpectValSetOfPaulis(
+        symbop, m_qwc_group.second, ProbReg, N);
     total_cost += current_pstr_val;
   }
 
@@ -244,8 +230,9 @@ double run_qkernel(const arma::mat &params, SymbolicOperator &symbop) {
 
 // Constructing a lambda function to be used for a single optimization iteration
 // This function is directly called by the dlib optimization routine
-double ansatz_run_lambda(SymbolicOperator &symbop, const arma::mat &params,
-                         double inv_temp) {
+double ansatz_run_lambda(SymbolicOperator &symbop, QWCMap &m_qwc_groups,
+                         const arma::mat &params, double inv_temp,
+                         Full_State_Simulator &iqs_device) {
   // loading the new variational angles into the special global array for hybrid
   // compilation
   QuantumVariableParams[0] = params(0);
@@ -254,26 +241,25 @@ double ansatz_run_lambda(SymbolicOperator &symbop, const arma::mat &params,
   QuantumVariableParams[3] = params(3);
 
   // runs the kernel to compute the total cost
-  double total_cost = run_qkernel(params, symbop);
+  double total_cost = run_qkernel(iqs_device, params, symbop, m_qwc_groups);
 
   return total_cost;
 }
 
 class EnergyOfAnsatz {
 public:
-  EnergyOfAnsatz(SymbolicOperator &symbop_, arma::mat &params_, double beta_)
-      : symbop(symbop_), params(params_), beta(beta_) {}
+  EnergyOfAnsatz(SymbolicOperator &symbop_, QWCMap &_m_qwc_groups,
+                 arma::mat &params_, double beta_,
+                 Full_State_Simulator &_iqs_device)
+      : symbop(symbop_), m_qwc_groups(_m_qwc_groups), params(params_),
+        beta(beta_), iqs_device(_iqs_device) {}
 
   double Evaluate(const arma::mat &theta) {
     steps_count++;
 
     double total_cost;
-    total_cost = ansatz_run_lambda(symbop, params, beta);
-
-    std::cout << "step: " << beta << ", ";
-    for (int i = 0; i < 4; i++)
-      std::cout << params[i] << ", ";
-    std::cout << total_cost << "\n";
+    total_cost =
+        ansatz_run_lambda(symbop, m_qwc_groups, params, beta, iqs_device);
 
     return total_cost;
   }
@@ -282,6 +268,8 @@ private:
   SymbolicOperator symbop;
   const arma::mat &params;
   double beta;
+  QWCMap &m_qwc_groups;
+  Full_State_Simulator &iqs_device;
 };
 
 int main() {
@@ -298,6 +286,7 @@ int main() {
                      std::ofstream::out | std::ofstream::trunc);
   file_to_clear.close();
 
+  bool print_once_flag = false;
   std::ofstream results_file;
   results_file.open("tfd_minimization_results_sym_op.csv", std::ios_base::app);
   for (int beta_index = -30; beta_index < 31; beta_index += 1) {
@@ -331,14 +320,33 @@ int main() {
     pstring Za2b2{{1, 'Z'}, {3, 'Z'}};
     symbop.addTerm(Za2b2, -pow(beta, -1.48));
 
-    std::cout << "SymbolicOperator Object: " << symbop.getCharString() << "\n";
+    std::cout << "Hamiltonian: " << symbop.getCharString() << "\n";
+
+    // QWC
+    QWCMap m_qwc_groups =
+        SymbolicOperatorUtils::getQubitwiseCommutationGroups(symbop, N);
+    if (!print_once_flag) {
+      std::cout << "Number of Qubitwise Commutation (QWC) Groups : "
+                << m_qwc_groups.size() << "\n";
+      std::cout << "Qubitwise Commutation (QWC) Groups: " << m_qwc_groups
+                << "\n";
+      print_once_flag = true;
+    }
 
     // Using SA algorithm
     // Starting parameters
     arma::mat params_sa(std::vector<double>{0, 0, 0, 0});
 
+    /// Setup quantum device
+    Iqs_Config iqs_config(/*num_qubits*/ N,
+                          /*simulation_type*/ "noiseless");
+    Full_State_Simulator iqs_device(iqs_config);
+    if (QRT_ERROR_SUCCESS != iqs_device.ready()) {
+      return -1;
+    }
+
     // arbitrary function
-    EnergyOfAnsatz eoa_sa(symbop, params_sa, beta);
+    EnergyOfAnsatz eoa_sa(symbop, m_qwc_groups, params_sa, beta, iqs_device);
 
     // initialize the optimization algorithm
     ens::SA<> opt_sa(
@@ -375,4 +383,3 @@ int main() {
 
   return 0;
 }
-

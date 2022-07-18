@@ -36,7 +36,7 @@ project(hybrid-quantum-classical-library VERSION 0.1.0 LANGUAGES CXX)
 ################################################################################
 # Set some compiler options related to C++.
 ################################################################################
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ################################################################################

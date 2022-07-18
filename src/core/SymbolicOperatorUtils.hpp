@@ -137,7 +137,7 @@ public:
   /// @param num_qbits - Number of qubits
   static void applyBasisChange(std::set<pstring> &s_pstr,
                                std::vector<double> &variable_params,
-                               int num_qbits);
+                               int num_qbits, bool qwc_check = false);
 
   static QWCMap getQubitwiseCommutationGroups(SymbolicOperator &symbop,
                                               int num_qbits);

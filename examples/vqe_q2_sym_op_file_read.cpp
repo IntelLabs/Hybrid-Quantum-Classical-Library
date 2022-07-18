@@ -18,13 +18,13 @@
 // Variational Quantum Eigensolver
 
 /// Production mode
-// #include <clang/Quantum/quintrinsics.h>
+#include <clang/Quantum/quintrinsics.h>
 
 /// Development mode
-#include "../../clang/include/clang/Quantum/quintrinsics.h"
+// #include "../../clang/include/clang/Quantum/quintrinsics.h"
 
 /// Quantum Runtime Library APIs
-#include <quantum.h>
+#include <quantum.hpp>
 
 #include <cassert>
 #include <iostream>
@@ -39,6 +39,7 @@
 #include "SymbolicOperatorUtils.hpp"
 
 using namespace hybrid::quantum::core;
+using namespace iqsdk;
 
 const int N = 2;
 qbit QubitReg[N];
@@ -74,15 +75,11 @@ quantum_kernel void vqeQ2() {
 
   RY(QubitReg[1], QuantumVariableParams[6]);
   RX(QubitReg[1], QuantumVariableParams[7]);
-
-  // Measurements of all the qubits
-  for (Index = 0; Index < N; Index++) {
-    MeasZ(QubitReg[Index], CReg[Index]);
-  }
 }
 
-double run_qkernel(Intel_Quantum_Device &iqs_device, const arma::mat &params,
-                   SymbolicOperator &symbop) {
+double run_qkernel(Full_State_Simulator &iqs_device, const arma::mat &params,
+                   SymbolicOperator &symbop,
+                   std::map<int, std::set<pstring>> &m_qwc_groups) {
   int basis_change_variable_param_start_indx = 4;
   double total_energy = 0.0;
 
@@ -91,18 +88,24 @@ double run_qkernel(Intel_Quantum_Device &iqs_device, const arma::mat &params,
   QuantumVariableParams[2] = 2 * params[2];
   QuantumVariableParams[3] = 2 * params[3];
 
-  for (const auto &pstr : symbop.getOrderedPStringList()) {
-
+  for (auto &m_qwc_group : m_qwc_groups) {
     std::vector<double> ProbReg;
+
+    std::vector<double> variable_params;
+    variable_params.reserve(N * 2);
+
+    SymbolicOperatorUtils::applyBasisChange(m_qwc_group.second, variable_params,
+                                            N);
+
+    std::vector<std::reference_wrapper<qbit>> qids;
+    for (int qubit = 0; qubit < N; ++qubit) {
+      qids.push_back(std::ref(QubitReg[qubit]));
+    }
 
     QuantumVariableParams[4] = 0;
     QuantumVariableParams[5] = 0;
     QuantumVariableParams[6] = 0;
     QuantumVariableParams[7] = 0;
-
-    std::vector<double> variable_params;
-    variable_params.reserve(N * 2);
-    SymbolicOperatorUtils::applyBasisChange(pstr, variable_params, N);
 
     for (auto indx = 0; indx < variable_params.size(); ++indx) {
       QuantumVariableParams[basis_change_variable_param_start_indx + indx] =
@@ -111,30 +114,10 @@ double run_qkernel(Intel_Quantum_Device &iqs_device, const arma::mat &params,
 
     vqeQ2();
 
-    std::vector<double> ProbabilityRegister;
-    std::vector<std::reference_wrapper<qbit>> qids;
-    for (int qubit = 0; qubit < N; ++qubit) {
-      qids.push_back(std::ref(QubitReg[qubit]));
-    }
-    if (QRT0_ERROR_SUCCESS !=
-        iqs_device.get_conditional_probability(ProbabilityRegister, qids)) {
-      return -1;
-    }
+    ProbReg = iqs_device.get_probabilities(qids);
 
-    for (auto j = 0; j < ProbabilityRegister.size(); j++) {
-      auto p = ProbabilityRegister[j];
-      if (p > 0) {
-        ProbReg.push_back(ProbabilityRegister[j]);
-        std::cout << j << " : " << ProbabilityRegister[j] << "\t";
-        if ((j + 1) % 8 == 0)
-          std::cout << "\n";
-      }
-    }
-    std::cout << "\n";
-
-    double current_pstr_val =
-        symbop.op_sum[pstr].real() *
-        SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg, N);
+    double current_pstr_val = SymbolicOperatorUtils::getExpectValSetOfPaulis(
+        symbop, m_qwc_group.second, ProbReg, N);
     total_energy += current_pstr_val;
   }
 
@@ -143,28 +126,30 @@ double run_qkernel(Intel_Quantum_Device &iqs_device, const arma::mat &params,
 
 class EnergyOfAnsatz {
 public:
-  EnergyOfAnsatz(SymbolicOperator &_symbop, arma::mat &_params,
-                 Intel_Quantum_Device &_iqs_device)
-      : symbop(_symbop), params(_params), iqs_device(_iqs_device) {}
+  EnergyOfAnsatz(SymbolicOperator &_symbop,
+                 std::map<int, std::set<pstring>> &_m_qwc_groups,
+                 arma::mat &_params, Full_State_Simulator &_iqs_device)
+      : symbop(_symbop), m_qwc_groups(_m_qwc_groups), params(_params),
+        iqs_device(_iqs_device) {}
 
   double Evaluate(const arma::mat &theta) {
     steps_count++;
 
     double total_energy = 0.0;
 
-    return run_qkernel(iqs_device, params, symbop);
+    return run_qkernel(iqs_device, params, symbop, m_qwc_groups);
   }
 
 private:
   const arma::mat &params;
   SymbolicOperator symbop;
-  Intel_Quantum_Device &iqs_device;
+  QWCMap &m_qwc_groups;
+  Full_State_Simulator &iqs_device;
 };
 
 int main(int argc, char *argv[]) {
   SymbolicOperator so;
   // Accepts input file of two-qubits hamiltonian
-  // Change the N value in this file to read a file of N-qubits hamiltonian
   if (argc != 2) { // argc should be 2 for correct execution
     std::cout << "usage: " << argv[0] << " <filename>\n";
     return EXIT_FAILURE;
@@ -174,6 +159,14 @@ int main(int argc, char *argv[]) {
 
   std::string charstring = so.getCharString();
   std::cout << "Hamiltonian:\n" << charstring << "\n";
+
+  // QWC
+  QWCMap m_qwc_groups =
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(so, N);
+  std::cout << "Number of Qubitwise Commutation (QWC) Groups : "
+            << m_qwc_groups.size() << std::endl;
+  std::cout << "Qubitwise Commutation (QWC) Groups: " << m_qwc_groups
+            << std::endl;
 
   // Using SPSA algorithm
   // Starting parameters
@@ -187,14 +180,12 @@ int main(int argc, char *argv[]) {
   /// Setup quantum device
   Iqs_Config iqs_config(/*num_qubits*/ N,
                         /*simulation_type*/ "noiseless");
-  /// Must set 'num_shots' > 1 to get probabilities
-  iqs_config.num_shots = 10;
-  Intel_Quantum_Device iqs_device(iqs_config);
-  if (QRT0_ERROR_SUCCESS != iqs_device.ready()) {
+  Full_State_Simulator iqs_device(iqs_config);
+  if (QRT_ERROR_SUCCESS != iqs_device.ready()) {
     return -1;
   }
 
-  EnergyOfAnsatz eoa(so, params_spsa, iqs_device);
+  EnergyOfAnsatz eoa(so, m_qwc_groups, params_spsa, iqs_device);
 
   // initialize the optimization algorithm
   ens::SPSA opt_spsa(
@@ -226,7 +217,7 @@ int main(int argc, char *argv[]) {
   QuantumVariableParams[3] = params_sa[3];
 
   // arbitrary function
-  EnergyOfAnsatz eoa_sa(so, params_sa, iqs_device);
+  EnergyOfAnsatz eoa_sa(so, m_qwc_groups, params_sa, iqs_device);
 
   // initialize the optimization algorithm
   ens::SA<> opt_sa(

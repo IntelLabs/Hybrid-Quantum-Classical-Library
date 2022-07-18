@@ -292,17 +292,19 @@ SymbolicOperatorUtils::getQubitwiseCommutationGroups(SymbolicOperator &symbop,
 
 void SymbolicOperatorUtils::applyBasisChange(
     std::set<pstring> &s_pstr, std::vector<double> &variable_params,
-    int num_qbits) {
+    int num_qbits, bool qwc_check) {
 
-  // Check whether the set of pauli strings commutes with each other
-  SymbolicOperator symbop;
-  for (auto pstr : s_pstr) {
-    symbop.addTerm(pstr);
-  }
-  QWCMap qwc_group_mapping = getQubitwiseCommutationGroups(symbop, num_qbits);
-  if (qwc_group_mapping.size() > 1) {
-    throw std::logic_error("Provided pauli strings does not qubitwise "
-                           "commute. Basis change cannot be applied.");
+  if(qwc_check) {
+    // Check whether the set of pauli strings commutes with each other
+    SymbolicOperator symbop;
+    for (auto pstr : s_pstr) {
+      symbop.addTerm(pstr);
+    }
+    QWCMap qwc_group_mapping = getQubitwiseCommutationGroups(symbop, num_qbits);
+    if (qwc_group_mapping.size() > 1) {
+      throw std::logic_error("Provided pauli strings does not qubitwise "
+                            "commute. Basis change cannot be applied.");
+    }
   }
 
   for (const auto &pstr : s_pstr) {
