@@ -140,6 +140,7 @@ public:
   /// @return char
   ///
   static char findFirstPauliStringBasis(const pstring &pstr);
+
 }; // end of class SymbolicOperator
 
 } // namespace core

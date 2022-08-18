@@ -35,6 +35,8 @@ using pstring = std::set<op_pair>;
 using ComplexDP = std::complex<double>;
 using MapPString = std::map<pstring, ComplexDP>;
 using Vec2DMat = std::vector<std::vector<int>>;
+// graph color -> set of commuting terms
+using QWCMap = std::map<int, std::set<pstring>>;
 
 ///
 /// @brief Symbolic Operator Class
@@ -106,6 +108,12 @@ public:
   void removeAllTerms();
 
   ///
+  ///@brief Construct Symbolic Operator object from a file
+  ///
+  ///
+  int construct_hamiltonian_from_file(std::string filename);
+
+  ///
   ///@brief Construct a new Symbolic Operator object
   ///
   ///
@@ -146,8 +154,8 @@ public:
 
 #ifndef DOXYGEN_SKIP
   ///@brief Overloaded '*' to multiply SymbolicOperator with arbitrary
-  ///coefficient
-  ///TODO
+  /// coefficient
+  /// TODO
   ///@param inp_right
   ///@return SymbolicOperator
   ///
@@ -162,6 +170,29 @@ public:
   ///@return false
   ///
   bool operator==(const SymbolicOperator &rhs);
+
+  /// @brief Strips whitespace from LHS
+  /// @param s
+  /// @param matches
+  /// @return stripped whitespace string from LHS
+  std::string lstrip(std::string s, std::string matches);
+
+  /// @brief Strips whitespace from RHS
+  /// @param s
+  /// @param matches
+  /// @return stripped whitespace string from RHS
+  std::string rstrip(std::string s, std::string matches);
+
+  /// @brief Strips whitespace throughout the string
+  /// @param s
+  /// @return string without the whitespace
+  std::string stripws(std::string s);
+
+  /// @brief Splits the string into tokens as per the given delimiter
+  /// @param str
+  /// @param delim
+  /// @return vector of string tokens
+  std::vector<std::string> split(const std::string &str, const char delimiter);
 
   ///
   /// @brief Zero Threshold Value

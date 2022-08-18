@@ -170,7 +170,7 @@ SymbolicOperatorUtils::getExpectValSglPauli(const pstring &pstr,
                                             int num_qbits, double eps) {
   arma::Row<double> I = {1, 1};
   arma::Row<double> Z = {1, -1};
-  arma::Row<double> vR = {1};
+  arma::Row<double> vR = {1}; // To maintain the shape of the matrix
   double exp_val;
 
   arma::rowvec rv(ProbReg);
@@ -195,10 +195,6 @@ SymbolicOperatorUtils::getExpectValSglPauli(const pstring &pstr,
 double SymbolicOperatorUtils::getExpectValSetOfPaulis(
     const std::vector<pstring> &v_pstr, const std::vector<double> ProbReg,
     int num_qbits, double eps) {
-  arma::Row<double> I = {1, 1};
-  arma::Row<double> Z = {1, -1};
-  arma::Row<double> vR = {1};
-  arma::rowvec rv(ProbReg);
   double exp_val = 0.0;
 
   for (const auto &pstr : v_pstr) {
@@ -212,10 +208,6 @@ double SymbolicOperatorUtils::getExpectVal(SymbolicOperator &symbop,
                                            const std::vector<double> ProbReg,
                                            int num_qbits, double eps,
                                            METHOD method) {
-  arma::Row<double> I = {1, 1};
-  arma::Row<double> Z = {1, -1};
-  arma::Row<double> vR = {1};
-  arma::rowvec rv(ProbReg);
   double exp_val = 0.0;
 
   for (const auto &pstr : symbop.getOrderedPStringList()) {
@@ -229,9 +221,10 @@ double SymbolicOperatorUtils::getExpectVal(SymbolicOperator &symbop,
 char SymbolicOperatorUtils::findFirstPauliStringBasis(const pstring &pstr) {
   char first_pstr_basis;
   // Find first basis change
-  if(!pstr.empty()) {
+  if (!pstr.empty()) {
     first_pstr_basis = pstr.begin()->second;
-    if (first_pstr_basis != 'X' && first_pstr_basis != 'Y' && first_pstr_basis != 'Z') {
+    if (first_pstr_basis != 'X' && first_pstr_basis != 'Y' &&
+        first_pstr_basis != 'Z' && first_pstr_basis != 'I') {
       throw std::invalid_argument("Char must be in {X,Y,Z}");
     }
   } else {
