@@ -17,8 +17,8 @@
 #include "SymbolicOperatorUtils.hpp"
 
 #include <armadillo>
-#include <boost/graph/sequential_vertex_coloring.hpp>
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/sequential_vertex_coloring.hpp>
 
 #include <cassert>
 #include <iomanip>
@@ -43,12 +43,13 @@ using Vec2DMat = std::vector<std::vector<int>>;
 using namespace std;
 using namespace arma;
 
-typedef boost::adjacency_list<boost::listS, boost::vecS, boost::undirectedS> Graph;
+typedef boost::adjacency_list<boost::listS, boost::vecS, boost::undirectedS>
+    Graph;
 typedef boost::graph_traits<Graph>::vertex_descriptor vertex_descriptor;
 typedef int vertices_size_type;
-typedef boost::property_map<Graph, boost::vertex_index_t>::const_type vertex_index_map;
+typedef boost::property_map<Graph, boost::vertex_index_t>::const_type
+    vertex_index_map;
 typedef std::pair<int, int> Edge;
-
 
 // Two Pauli strings
 // If for *every* qubit id, either (at least one local op is I) or (both local
@@ -114,38 +115,32 @@ SymbolicOperatorUtils::qubitwiseCommutation(const SymbolicOperator &symbop) {
   return vmat;
 }
 
+vector<int> SymbolicOperatorUtils::getGroupsQWC(const Vec2DMat &qwcgraph) {
+  // Based on
+  // https://valelab4.ucsf.edu/svn/3rdpartypublic/boost/libs/graph/doc/sequential_vertex_coloring.html
 
-vector<int> 
-SymbolicOperatorUtils::getGroupsQWC(const Vec2DMat &qwcgraph) {
-  // Based on https://valelab4.ucsf.edu/svn/3rdpartypublic/boost/libs/graph/doc/sequential_vertex_coloring.html
-  
   int numNodes = qwcgraph.size();
 
   // Transfer Vec2DMat to an edge list
   vector<Edge> edges;
-  for( int i=0; i < qwcgraph.size(); i++ ) {
-    for( int j=0; j < i; j++ ) {
-      if (qwcgraph[i][j]==1) {
-        edges.push_back( Edge(i,j) );
+  for (int i = 0; i < qwcgraph.size(); i++) {
+    for (int j = 0; j < i; j++) {
+      if (qwcgraph[i][j] == 1) {
+        edges.push_back(Edge(i, j));
       }
     }
   }
 
   // Define the graph
-  Graph g(edges.begin(), edges.end(), numNodes );
-  
+  Graph g(edges.begin(), edges.end(), numNodes);
 
-  //vector<int> qubitWiseCommutingGroups;
   std::vector<vertices_size_type> color_vec(boost::num_vertices(g));
-  boost::iterator_property_map<vertices_size_type*, vertex_index_map> color(&color_vec.front(), get(boost::vertex_index, g));
+  boost::iterator_property_map<vertices_size_type *, vertex_index_map> color(
+      &color_vec.front(), get(boost::vertex_index, g));
   vertices_size_type num_colors = sequential_vertex_coloring(g, color);
 
-  //return qubitWiseCommutingGroups;
   return color_vec;
-  
 }
-
-
 
 string
 SymbolicOperatorUtils::getCharString_pstring(const pstring &inp_pstring) {
@@ -204,6 +199,19 @@ double SymbolicOperatorUtils::getExpectValSetOfPaulis(
   return exp_val;
 }
 
+double SymbolicOperatorUtils::getExpectValSetOfPaulis(
+    SymbolicOperator &symbop, std::set<pstring> &s_pstr,
+    const std::vector<double> ProbReg, int num_qbits, double eps) {
+  double exp_val = 0.0;
+
+  for (const auto &pstr : s_pstr) {
+    exp_val += symbop.op_sum[pstr].real() *
+               getExpectValSglPauli(pstr, ProbReg, num_qbits);
+  }
+
+  return exp_val;
+}
+
 double SymbolicOperatorUtils::getExpectVal(SymbolicOperator &symbop,
                                            const std::vector<double> ProbReg,
                                            int num_qbits, double eps,
@@ -224,7 +232,7 @@ char SymbolicOperatorUtils::findFirstPauliStringBasis(const pstring &pstr) {
   if (!pstr.empty()) {
     first_pstr_basis = pstr.begin()->second;
     if (first_pstr_basis != 'X' && first_pstr_basis != 'Y' &&
-        first_pstr_basis != 'Z' && first_pstr_basis != 'I') {
+        first_pstr_basis != 'Z') {
       throw std::invalid_argument("Char must be in {X,Y,Z}");
     }
   } else {
@@ -244,9 +252,9 @@ void SymbolicOperatorUtils::applyBasisChange(
 
     if (foundX != pstr.end()) {
       variable_params.push_back(FP_PIby2);
-      variable_params.push_back(FP_PI);
+      variable_params.push_back(0);
     } else if (foundY != pstr.end()) {
-      variable_params.push_back(FP_PI);
+      variable_params.push_back(0);
       variable_params.push_back(FP_PIby2);
     } else if (foundZ != pstr.end()) {
       variable_params.push_back(0);
@@ -254,9 +262,9 @@ void SymbolicOperatorUtils::applyBasisChange(
     } else {
       if (first_pstr_basis == 'X') {
         variable_params.push_back(FP_PIby2);
-        variable_params.push_back(FP_PI);
+        variable_params.push_back(0);
       } else if (first_pstr_basis == 'Y') {
-        variable_params.push_back(FP_PI);
+        variable_params.push_back(0);
         variable_params.push_back(FP_PIby2);
       } else if (first_pstr_basis == 'Z') {
         variable_params.push_back(0);
@@ -264,6 +272,71 @@ void SymbolicOperatorUtils::applyBasisChange(
       }
     }
   }
+}
+
+QWCMap
+SymbolicOperatorUtils::getQubitwiseCommutationGroups(SymbolicOperator &symbop,
+                                                     int num_qbits) {
+
+  Vec2DMat qwcmat = SymbolicOperatorUtils::qubitwiseCommutation(symbop);
+  std::vector<int> coloring = SymbolicOperatorUtils::getGroupsQWC(qwcmat);
+  QWCMap qbtwise_comm_groups;
+  for (auto pos = 0; pos < coloring.size(); pos++) {
+    const auto ord_list = symbop.getOrderedPStringList();
+    // qbtwise_comm_groups[coloring[pos]].insert(symbop.get_op_sum()[ord_list[pos]]);
+    qbtwise_comm_groups[coloring[pos]].emplace(ord_list[pos]);
+  }
+
+  return qbtwise_comm_groups;
+}
+
+void SymbolicOperatorUtils::applyBasisChange(
+    std::set<pstring> &s_pstr, std::vector<double> &variable_params,
+    int num_qbits) {
+
+  // Check whether the set of pauli strings commutes with each other
+  SymbolicOperator symbop;
+  for (auto pstr : s_pstr) {
+    symbop.addTerm(pstr);
+  }
+  QWCMap qwc_group_mapping = getQubitwiseCommutationGroups(symbop, num_qbits);
+  if (qwc_group_mapping.size() > 1) {
+    throw std::logic_error("Provided pauli strings does not qubitwise "
+                           "commute. Basis change cannot be applied.");
+  }
+
+  for (const auto &pstr : s_pstr) {
+    for (auto idx = 0; idx < num_qbits; ++idx) {
+      auto foundX = pstr.find(op_pair(idx, 'X'));
+      auto foundY = pstr.find(op_pair(idx, 'Y'));
+      auto foundZ = pstr.find(op_pair(idx, 'Z'));
+      if (foundX != pstr.end()) {
+        variable_params.push_back(FP_PIby2);
+        variable_params.push_back(0);
+      } else if (foundY != pstr.end()) {
+        variable_params.push_back(0);
+        variable_params.push_back(FP_PIby2);
+      } else if (foundZ != pstr.end()) {
+        variable_params.push_back(0);
+        variable_params.push_back(0);
+      }
+    }
+  }
+}
+
+std::ostream &operator<<(std::ostream &s, const QWCMap &qwc_groups_mapping) {
+  s << "\n";
+  for (const auto &qwc_group_mapping : qwc_groups_mapping) {
+    s << "Group " << qwc_group_mapping.first << "\n";
+    for (const auto &s_pstr : qwc_group_mapping.second) {
+      s << "\t[ ";
+      for (const auto &pstr : s_pstr) {
+        s << pstr.second << std::to_string(pstr.first) << " ";
+      }
+      s << "]\n";
+    }
+  }
+  return s;
 }
 
 } // namespace core

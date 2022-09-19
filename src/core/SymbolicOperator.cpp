@@ -327,7 +327,7 @@ std::vector<std::string> SymbolicOperator::split(const std::string &str,
   string elem;
   vector<string> columns;
   stringstream ss(str);
-  while (getline(ss, elem, delim)) {
+  while (getline(ss, elem, delimiter)) {
     columns.push_back(elem);
   }
 

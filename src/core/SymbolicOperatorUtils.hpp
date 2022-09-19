@@ -21,20 +21,14 @@
 
 #include <complex>
 #include <map>
-#include <set> // These are ordered
+#include <set>
 #include <string>
-#include <utility> // pair
+#include <utility>
 #include <vector>
 
 namespace hybrid {
 namespace quantum {
 namespace core {
-
-using op_pair = std::pair<int, char>;
-using pstring = std::set<op_pair>;
-using ComplexDP = std::complex<double>;
-using MapPString = std::map<pstring, ComplexDP>;
-using Vec2DMat = std::vector<std::vector<int>>;
 
 enum class METHOD { DEFAULT = 0, QWC };
 
@@ -46,13 +40,6 @@ const double FP_PIby2 = 1.57079632679489661923;
 /// @brief Utility methods for Symbolic Operator Class
 ///
 class SymbolicOperatorUtils {
-  // Eventually need:
-  // -- Commutation graph
-  // -- Qubit-wise commutation graph
-  // -- Anti-commutation graph
-  // TODO:
-  //- get the string addTerm to work. (do *not* do multi-term)
-  //- get scalar mult to work
 
 public:
   ///
@@ -80,7 +67,7 @@ public:
   static std::string getCharString_pstring(const pstring &pstr);
 
   ///
-  /// @brief Get the Expect Val object
+  /// @brief Get the expectation value of the symbolic operator object
   ///
   /// @param symbop - SymbolicOperator object
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
@@ -89,27 +76,40 @@ public:
   /// @param method - Method based on Qubit properties
   /// @return double
   ///
-  static double
-  getExpectVal(SymbolicOperator &symbop,
-               const std::vector<double> ProbReg,
-               int num_qubits, double eps = 0.0, METHOD method = METHOD::DEFAULT);
+  static double getExpectVal(SymbolicOperator &symbop,
+                             const std::vector<double> ProbReg, int num_qubits,
+                             double eps = 0.0, METHOD method = METHOD::DEFAULT);
 
   ///
-  /// @brief Get the Expect Val Set Of Paulis object
+  /// @brief Get the expectation value for a set of pauli strings/objects
   ///
-  /// @param pstr - List of Pauli Strings
+  /// @param pstr - Set of pauli operators
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
   /// @param num_qubits - Number of qubits
   /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
-  static double getExpectValSetOfPaulis(
-      const std::vector<pstring> &pstr,
-      const std::vector<double> ProbReg,
-      int num_qubits, double eps = 0.0);
+  static double getExpectValSetOfPaulis(const std::vector<pstring> &v_pstr,
+                                        const std::vector<double> ProbReg,
+                                        int num_qubits, double eps = 0.0);
 
   ///
-  /// @brief Get the Expect Val Sgl Pauli object
+  /// @brief Get the expectation value for a set of pauli strings/objects
+  ///
+  /// @param symbop - Symbolic representation
+  /// @param pstr - Set of pauli operators
+  /// @param ProbReg - Probabilities obtained from the state vector amplitudes
+  /// @param num_qubits - Number of qubits
+  /// @param eps - Desired precision (epsilon)
+  /// @return double
+  ///
+  static double getExpectValSetOfPaulis(SymbolicOperator &symbop,
+                                        std::set<pstring> &s_pstr,
+                                        const std::vector<double> ProbReg,
+                                        int num_qubits, double eps = 0.0);
+
+  ///
+  /// @brief Get the expectation value of single pauli string/object
   ///
   /// @param pstr - Pauli String
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
@@ -117,35 +117,42 @@ public:
   /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
-  static double getExpectValSglPauli(
-      const pstring &pstr,
-      const std::vector<double> ProbReg,
-      int num_qubits, double eps = 0.0);
+  static double getExpectValSglPauli(const pstring &pstr,
+                                     const std::vector<double> ProbReg,
+                                     int num_qubits, double eps = 0.0);
 
-  ///
-  /// @brief Applies the basis change to the given Pauli string
-  ///
-  /// @param pstr - Pauli String
-  /// @param variable_params - Probabilities obtained from the state vector amplitudes
-  /// @param num_qubits - Desired precision (epsilon)
-  ///
+  /// @brief Applies basis change to a single Pauli string. For the missing
+  /// qubit in the pauli term, first encountered
+  ///        pauli operator's basis change is applied
+  /// @param pstr - Pauli string
+  /// @param variable_params - Variable Parameters
+  /// @param num_qbits - Number of qubits
   static void applyBasisChange(const pstring &pstr,
-                              std::vector<double> &variable_params, int
-                              num_qubits);
+                               std::vector<double> &variable_params,
+                               int num_qbits);
 
-  ///
-  /// @brief Finds the basis of the first Pauli string
-  ///
-  /// @param pstr - Pauli String
-  /// @return char
-  ///
+  /// @brief Applies basis change to a set of pauli strings/objects.
+  /// @param s_pstr - Set of pauli strings/objects
+  /// @param variable_params - Variable Parameters
+  /// @param num_qbits - Number of qubits
+  static void applyBasisChange(std::set<pstring> &s_pstr,
+                               std::vector<double> &variable_params,
+                               int num_qbits);
+
+  static QWCMap getQubitwiseCommutationGroups(SymbolicOperator &symbop,
+                                              int num_qbits);
+
+  /// @brief Finds the first pauli operator in the pauli string
+  /// @param pstr - Pauli string
+  /// @return
   static char findFirstPauliStringBasis(const pstring &pstr);
 
 }; // end of class SymbolicOperator
+
+std::ostream &operator<<(std::ostream &s, const QWCMap &qwc_groups_mapping);
 
 } // namespace core
 } // namespace quantum
 } // namespace hybrid
 
 #endif // __HYBRID_QUANTUM_CORE_SYMBOLIC_OPERATOR_UTILS_DOT_HPP__
-

@@ -208,6 +208,9 @@ public:
   /// @brief Stores qubit-wise commutation graph
   ///
   Vec2DMat adj_matrix;
+
+  /// @brief Stores the qubitwise commutation groups
+  QWCMap m_qwc_groups;
 }; // end of class SymbolicOperator
 
 } // namespace core
