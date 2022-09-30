@@ -325,7 +325,7 @@ TEST(QWCTests, Complete) {
   inp = {{0, 'X'}};
   s_pstr.insert(inp);
   EXPECT_THROW(SymbolicOperatorUtils::applyBasisChange(s_pstr, variable_params,
-                                                       num_qubits),
+                                                       num_qubits, true),
                std::logic_error);
 }
 
