@@ -39,9 +39,9 @@ fi
 ABS_BUILD_DIR_PREFIX=$(realpath ${BUILD_DIR_PREFIX})
 cd ${ABS_BUILD_DIR_PREFIX}
 cmake ..
-make -j32
+make -j32 install
 
 echo "Building Hybrid Quantum-Classical Library package ${LIB_RELEASE_VERSION}.tar.gz"
-tar czf ${LIB_RELEASE_VERSION}.tar.gz lib include share licensing
+tar czf ${LIB_RELEASE_VERSION}.tar.gz --exclude CMake --exclude cmake --exclude pkgconfig lib include licensing
 echo "Package build complete"
 
