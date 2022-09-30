@@ -52,7 +52,8 @@ public:
   ///@param check_validity - For this constructor, we do not allow >1 op on same
   /// qubit id
   ///
-  void addTerm(pstring &inpp, ComplexDP k = 1, bool check_validity = true);
+  void addTerm(const pstring &inpp, ComplexDP k = 1,
+               bool check_validity = true);
 
   ///
   ///@brief Add pauli string (as character string)

@@ -35,7 +35,7 @@ using std::vector;
 using namespace std;
 
 // Add pauli string (as set of pairs)
-void SymbolicOperator::addTerm(pstring &inpp, ComplexDP k,
+void SymbolicOperator::addTerm(const pstring &inpp, ComplexDP k,
                                bool check_validity) {
 
   if (check_validity) {
