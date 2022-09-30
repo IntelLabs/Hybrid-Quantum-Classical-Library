@@ -20,20 +20,17 @@
 #include <gtest/gtest.h>
 
 #include <cassert>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <istream>
 #include <map>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <utility> // pair
+#include <utility>
 #include <vector>
-
-/*
- *
- * g++ -std=c++0x SymbolicOperator_Test.cpp
- *
- */
 
 using namespace std;
 using namespace hybrid::quantum::core;
@@ -41,6 +38,24 @@ using namespace hybrid::quantum::core;
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
+}
+
+string tmpfilefortest(const string &prefix, const string &dir) {
+  string s = dir + "/" + prefix + "XXXXXX";
+  char *cs = new char[s.size() + 1];
+  cs[s.copy(cs, s.size())] = '\0';
+
+  // create tmpfile and get file descriptor
+  int fd = mkstemp(cs);
+  if (fd == -1 || close(fd) == -1) {
+    std::cout << "Error creating temporary file (" << errno
+              << "): " << strerror(errno);
+  }
+
+  string filename(cs);
+
+  delete[] cs;
+  return filename;
 }
 
 TEST(IdentityTests, Complete) {
@@ -193,39 +208,37 @@ TEST(IdentityTests, Complete) {
   ASSERT_TRUE(op_id_1 == op_id_2);
 
   // Test getOrderedPStringList
-  SymbolicOperator op_izmaylov;
   op.removeAllTerms();
   vector<string> inp_char;
-  inp_char = {"X3","X4"};
-  op.addTerm(inp_char,1.0);
-  inp_char = {"Z1","Z2"};
-  op.addTerm(inp_char,1.0);
-  inp_char = {"Y1","X3","X4"};
-  op.addTerm(inp_char,1.0);
-  inp_char = {"Z1","Z2","Z3"};
-  op.addTerm(inp_char,1.0);
-  inp_char = {"Z1","Z2","Z3","Z4"};
-  op.addTerm(inp_char,1.0);
+  inp_char = {"X3", "X4"};
+  op.addTerm(inp_char, 1.0);
+  inp_char = {"Z1", "Z2"};
+  op.addTerm(inp_char, 1.0);
+  inp_char = {"Y1", "X3", "X4"};
+  op.addTerm(inp_char, 1.0);
+  inp_char = {"Z1", "Z2", "Z3"};
+  op.addTerm(inp_char, 1.0);
+  inp_char = {"Z1", "Z2", "Z3", "Z4"};
+  op.addTerm(inp_char, 1.0);
   inp_char = {"Z1"};
-  op.addTerm(inp_char,1.0);
-  inp_char = {"Y1","Y2","X3","X4"};
-  op.addTerm(inp_char,1.0);
+  op.addTerm(inp_char, 1.0);
+  inp_char = {"Y1", "Y2", "X3", "X4"};
+  op.addTerm(inp_char, 1.0);
   vector<pstring> ordered_pstrings = op.getOrderedPStringList();
-  EXPECT_EQ( ordered_pstrings, vector<pstring>({
-      {{1,'Y'},{2,'Y'},{3,'X'},{4,'X'}},
-      {{1,'Y'},{3,'X'},{4,'X'}},
-      {{1,'Z'}},
-      {{1,'Z'},{2,'Z'}},
-      {{1,'Z'},{2,'Z'},{3,'Z'}},
-      {{1,'Z'},{2,'Z'},{3,'Z'},{4,'Z'}},
-      {{3,'X'},{4,'X'}} 
-      }));
+  EXPECT_EQ(ordered_pstrings,
+            vector<pstring>({{{1, 'Y'}, {2, 'Y'}, {3, 'X'}, {4, 'X'}},
+                             {{1, 'Y'}, {3, 'X'}, {4, 'X'}},
+                             {{1, 'Z'}},
+                             {{1, 'Z'}, {2, 'Z'}},
+                             {{1, 'Z'}, {2, 'Z'}, {3, 'Z'}},
+                             {{1, 'Z'}, {2, 'Z'}, {3, 'Z'}, {4, 'Z'}},
+                             {{3, 'X'}, {4, 'X'}}}));
 
   // Incorrect Pauli String - A0
   SymbolicOperator op_A0;
   vector<string> v_inp = {"A0"};
   EXPECT_THROW(op_A0.addTerm(v_inp, 2.0), invalid_argument);
-    
+
   // Z0 * X0
   SymbolicOperator op_Z0;
   pstring inp_Z0 = {{0, 'Z'}};
@@ -259,16 +272,15 @@ TEST(IdentityTests, Complete) {
   charstring = op_Z1X1.getCharString();
   EXPECT_EQ(charstring, "0.0");
 
-/*
-Y1 Y2 X3 X4
-Y1 X3 X4
-Z1
-Z1 Z2
-Z1 Z2 Z3
-Z1 Z2 Z3 Z4
-X3 X4
-*/
-
+  /*
+  Y1 Y2 X3 X4
+  Y1 X3 X4
+  Z1
+  Z1 Z2
+  Z1 Z2 Z3
+  Z1 Z2 Z3 Z4
+  X3 X4
+  */
 }
 
 TEST(ExpectationValueTests, Complete) {
@@ -278,11 +290,13 @@ TEST(ExpectationValueTests, Complete) {
   pstring inp_y1{{0, 'Z'}, {1, 'Z'}};
   so.addTerm(inp_y1, 0.5);
 
-  std::vector<double> ProbReg {0.1, 0.2, 0.1, 0.1};
+  std::vector<double> ProbReg{0.1, 0.2, 0.1, 0.1};
   std::vector<double> expected{-0.050000000000000003};
   std::vector<double> actual;
-  for(const auto& pstr : so.getOrderedPStringList()) {
-    actual.push_back(so.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg, 2));
+  for (const auto &pstr : so.getOrderedPStringList()) {
+    actual.push_back(
+        so.op_sum[pstr].real() *
+        SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg, 2));
   }
   ASSERT_TRUE(expected.size() == actual.size());
   for (int i = 0; i < expected.size(); ++i) {
@@ -294,11 +308,13 @@ TEST(ExpectationValueTests, Complete) {
   pstring inp_y2{{0, 'X'}};
   so_1.addTerm(inp_y2, 0.5);
 
-  std::vector<double> ProbReg_1 {0.1, 0.2, 0.1, 0.1};
-  std::vector<double> expected_1 {0.050000000000000003};
+  std::vector<double> ProbReg_1{0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected_1{0.050000000000000003};
   std::vector<double> actual_1;
-  for(const auto& pstr : so_1.getOrderedPStringList()) {
-    actual_1.push_back(so_1.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_1, 2));
+  for (const auto &pstr : so_1.getOrderedPStringList()) {
+    actual_1.push_back(
+        so_1.op_sum[pstr].real() *
+        SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_1, 2));
   }
   ASSERT_TRUE(expected_1.size() == actual_1.size());
   for (int i = 0; i < expected_1.size(); ++i) {
@@ -310,11 +326,13 @@ TEST(ExpectationValueTests, Complete) {
   pstring inp_y3{{1, 'X'}};
   so_2.addTerm(inp_y3, 0.25);
 
-  std::vector<double> ProbReg_2 {0.1, 0.2, 0.1, 0.1};
-  std::vector<double> expected_2 {-0.025000000000000008};
+  std::vector<double> ProbReg_2{0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected_2{-0.025000000000000008};
   std::vector<double> actual_2;
-  for(const auto& pstr : so_2.getOrderedPStringList()) {
-    actual_2.push_back(so_2.op_sum[pstr].real() * SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_2, 2));
+  for (const auto &pstr : so_2.getOrderedPStringList()) {
+    actual_2.push_back(
+        so_2.op_sum[pstr].real() *
+        SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_2, 2));
   }
   ASSERT_TRUE(expected_2.size() == actual_2.size());
   for (int i = 0; i < expected_2.size(); ++i) {
@@ -324,10 +342,11 @@ TEST(ExpectationValueTests, Complete) {
   // test 4
   std::vector<pstring> v_pstr{{{0, 'Z'}, {1, 'Z'}}, {{0, 'X'}}, {{1, 'X'}}};
 
-  std::vector<double> ProbReg_3 {0.1, 0.2, 0.1, 0.1};
-  std::vector<double> expected_3 {-0.10000000000000003};
+  std::vector<double> ProbReg_3{0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected_3{-0.10000000000000003};
   std::vector<double> actual_3;
-  actual_3.push_back(SymbolicOperatorUtils::getExpectValSetOfPaulis(v_pstr, ProbReg_3, 2));
+  actual_3.push_back(
+      SymbolicOperatorUtils::getExpectValSetOfPaulis(v_pstr, ProbReg_3, 2));
   ASSERT_TRUE(expected_3.size() == actual_3.size());
   for (int i = 0; i < expected_3.size(); ++i) {
     EXPECT_DOUBLE_EQ(expected_3[i], actual_3[i]);
@@ -339,8 +358,8 @@ TEST(ExpectationValueTests, Complete) {
   symbop.addTerm(inp_y2, 0.5);
   symbop.addTerm(inp_y3, 0.25);
 
-  std::vector<double> ProbReg_4 {0.1, 0.2, 0.1, 0.1};
-  std::vector<double> expected_4 {-0.025000000000000008};
+  std::vector<double> ProbReg_4{0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected_4{-0.025000000000000008};
   std::vector<double> actual_4;
   actual_4.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg_4, 2));
 
@@ -350,3 +369,155 @@ TEST(ExpectationValueTests, Complete) {
   }
 }
 
+TEST(ConstructHamiltonianFromFileTests, Complete) {
+  SymbolicOperator symbop;
+  symbop.construct_hamiltonian_from_file(
+      "../src/core/bosehubb_gray_d-4_Nx-002.ham");
+
+  std::vector<double> ProbReg{0.1, 0.2, 0.1, 0.1};
+  std::vector<double> expected{1.8000000000000007};
+  std::vector<double> actual;
+
+  actual.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg, 2));
+
+  ASSERT_TRUE(expected.size() == actual.size());
+  for (int i = 0; i < expected.size(); ++i) {
+    EXPECT_DOUBLE_EQ(expected[i], actual[i]);
+  }
+
+  // test 2
+  string s1 = "2 qubits\n"
+              "  Z0 Z1 : 0.5;  \n"
+              "X0 : 0.5;\n"
+              "X1 : 0.25;\n";
+
+  string ham_file = tmpfilefortest("ham_file_for_test", "/tmp");
+  std::ofstream out(ham_file);
+  out << s1;
+  out.close();
+
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(ham_file) == EXIT_SUCCESS);
+
+  expected.clear();
+  expected.push_back(1.7750000000000004);
+  actual.clear();
+  actual.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg, 2));
+
+  ASSERT_TRUE(expected.size() == actual.size());
+  for (int i = 0; i < expected.size(); ++i) {
+    EXPECT_DOUBLE_EQ(expected[i], actual[i]);
+  }
+
+  remove(ham_file.c_str());
+
+  // test 3
+  // Z is not assigned a qubit number which makes it invalid
+  // ignores empty newline
+  string s2 = "2 qubits\n"
+              "\n"
+              "I : 0.5\n"
+              "Z Z : 0.5;\n"
+              "X0 : 0.5;\n"
+              "X1 : 0.25;\n";
+
+  ham_file = tmpfilefortest("ham_file_for_test", "/tmp");
+  std::ofstream out2(ham_file);
+  out2 << s2;
+  out2.close();
+
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(ham_file) == EXIT_FAILURE);
+
+  remove(ham_file.c_str());
+
+  // test 4
+  // invalid header with extra text
+  string s3 = "2 qubits example\n"
+              "Z Z : 0.5;\n"
+              "X0 : 0.5;\n"
+              "X1 : 0.25;\n";
+
+  ham_file = tmpfilefortest("ham_file_for_test", "/tmp");
+  std::ofstream out3(ham_file);
+  out3 << s3;
+  out3.close();
+
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(ham_file) == EXIT_FAILURE);
+
+  remove(ham_file.c_str());
+
+  // test 5
+  // invalid header
+  string s4 = "2 qubts\n"
+              "Z Z : 0.5;\n"
+              "X0 : 0.5;\n"
+              "X1 : 0.25;\n";
+
+  ham_file = tmpfilefortest("ham_file_for_test", "/tmp");
+  std::ofstream out4(ham_file);
+  out4 << s4;
+  out4.close();
+
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(ham_file) == EXIT_FAILURE);
+
+  remove(ham_file.c_str());
+
+  // test 6
+  // invalid header
+  string s5 = "A qubits\n"
+              "Z Z : 0.5;\n"
+              "X0 : 0.5;\n"
+              "X1 : 0.25;\n";
+
+  ham_file = tmpfilefortest("ham_file_for_test", "/tmp");
+  std::ofstream out5(ham_file);
+  out5 << s5;
+  out5.close();
+
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(ham_file) == EXIT_FAILURE);
+
+  remove(ham_file.c_str());
+
+  // test 7
+  // invalid header
+  string s6 = "0 qubits\n"
+              "Z Z : 0.5;\n"
+              "X0 : 0.5;\n"
+              "X1 : 0.25;\n";
+
+  ham_file = tmpfilefortest("ham_file_for_test", "/tmp");
+  std::ofstream out6(ham_file);
+  out6 << s6;
+  out6.close();
+
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(ham_file) == EXIT_FAILURE);
+
+  remove(ham_file.c_str());
+
+  // test 8
+  // invalid header
+  string s7 = "1 qubits\n"
+              "A0 : 0.5;\n";
+
+  ham_file = tmpfilefortest("ham_file_for_test", "/tmp");
+  std::ofstream out7(ham_file);
+  out7 << s7;
+  out7.close();
+
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(ham_file) == EXIT_FAILURE);
+
+  remove(ham_file.c_str());
+
+  // test 9
+  // invalid filename
+  ham_file = "/tmp/non-existent-file";
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(ham_file) == EXIT_FAILURE);
+
+  // test 10
+  // test lstrip functionality
+  EXPECT_EQ(symbop.lstrip("  TestString", " "), "TestString");
+
+  // test 11
+  // test lstrip functionality
+  EXPECT_EQ(symbop.lstrip("|", "|"), "");
+
+}

@@ -16,9 +16,13 @@
 
 #include "SymbolicOperator.hpp"
 
+#include <fstream>
 #include <iostream>
+#include <istream>
 #include <iterator>
+#include <sstream>
 #include <stdexcept>
+#include <vector>
 
 namespace hybrid {
 
@@ -31,7 +35,7 @@ using std::vector;
 using namespace std;
 
 // Add pauli string (as set of pairs)
-void SymbolicOperator::addTerm(pstring &inpp, ComplexDP k,
+void SymbolicOperator::addTerm(const pstring &inpp, ComplexDP k,
                                bool check_validity) {
 
   if (check_validity) {
@@ -73,7 +77,7 @@ void SymbolicOperator::addTerm(vector<string> &vecstr, ComplexDP k) {
   }
 
   auto iter = newop.op_sum.begin();
-  if(iter != newop.op_sum.end()) {
+  if (iter != newop.op_sum.end()) {
     pstring locstring = newop.op_sum.begin()->first;
     this->op_sum[locstring] += k;
   }
@@ -90,7 +94,7 @@ void SymbolicOperator::addIdentTerm(ComplexDP k) {
 op_pair SymbolicOperator::processLocCharString(std::string inp) {
 
   // Must be 'X', 'Y', or 'Z'
-  char sglP (inp[0]);
+  char sglP(inp[0]);
   if (sglP != 'X' && sglP != 'Y' && sglP != 'Z') {
     throw std::invalid_argument("Char must be in {X,Y,Z}");
   }
@@ -283,7 +287,6 @@ int SymbolicOperator::getNumTerms() { return this->op_sum.size(); }
 vector<pstring> SymbolicOperator::getOrderedPStringList() {
 
   vector<pstring> listPStrings;
-
   for (auto it = this->op_sum.begin(); it != this->op_sum.end(); ++it) {
     listPStrings.push_back(it->first);
   }
@@ -293,6 +296,118 @@ vector<pstring> SymbolicOperator::getOrderedPStringList() {
 
 // Remove all terms
 void SymbolicOperator::removeAllTerms() { this->op_sum.clear(); }
+
+std::string SymbolicOperator::lstrip(std::string s, std::string matches) {
+  const size_t b = s.find_first_not_of(matches);
+  if (b == std::string::npos)
+    return "";
+  return s.substr(b, string::npos);
+}
+
+std::string SymbolicOperator::rstrip(std::string s, std::string matches) {
+  const size_t e = s.find_last_not_of(matches);
+  const size_t range = e + 1;
+  return s.substr(0, range);
+}
+
+std::string SymbolicOperator::stripws(std::string s) {
+  const string &ws = " \t\n\r";
+  const size_t b = s.find_first_not_of(ws);
+  if (b == string::npos)
+    return "";
+  const size_t e = s.find_last_not_of(ws);
+  const size_t range = e - b + 1;
+  return s.substr(b, range);
+}
+
+std::vector<std::string> SymbolicOperator::split(const std::string &str,
+                                                 const char delimiter) {
+  std::string s1;
+
+  string elem;
+  vector<string> columns;
+  stringstream ss(str);
+  while (getline(ss, elem, delimiter)) {
+    columns.push_back(elem);
+  }
+
+  return columns;
+}
+
+// Construct Hamiltonian from file
+int SymbolicOperator::construct_hamiltonian_from_file(std::string filename) {
+  std::ifstream ifs;
+  try {
+    ifs.open(filename);
+    if (!ifs.is_open()) {
+      throw runtime_error("invalid file -> " + filename);
+    }
+  } catch (std::exception &e) {
+    std::cout << e.what() << '\n';
+    return EXIT_FAILURE;
+  }
+
+  std::string line;
+  bool first_line = false;
+  unsigned long numqbits;
+  try {
+    while (std::getline(ifs, line)) {
+
+      if (!first_line) {
+        first_line = true;
+        vector<string> header = split(stripws(line), ' ');
+        if (header.size() > 2)
+          throw runtime_error("invalid header -> " + line);
+        if (header.size() > 2 && header[1] != "qubits")
+          throw runtime_error("invalid data -> " + line);
+        std::size_t pos{};
+        numqbits = stoul(header[0], &pos);
+        if (header.size() > 1 && (pos != header[0].size() || numqbits < 1)) {
+          throw runtime_error("invalid input for the number of qubits");
+        }
+        continue;
+      }
+
+      pstring inp_id{};
+
+      std::istringstream iss(line);
+      std::string s_line = rstrip(stripws(line), ";");
+      std::vector<std::string> pauliterm = split(s_line, ':');
+
+      // read pauli term
+      if (pauliterm.size() > 1) {
+        std::vector<std::string> terms = split(pauliterm[0], ' ');
+        for (auto &t : terms) {
+          if (t.size() > 2 || (t.size() > 1 && ((int)t[1] - '0') < 0) ||
+              (t.size() > 1 && (((int)t[1] - '0') > numqbits - 1)) ||
+              (t.size() == 1 && t[0] != 'I') ||
+              (t.size() > 1 && t[0] != 'X' && t[0] != 'Y' && t[0] != 'Z' &&
+               t[0] != 'I')) {
+            throw runtime_error("invalid term -> " + t);
+          }
+
+          // handle pauli operators X, Y & Z
+          if (t.size() > 1) {
+            inp_id.insert({(int)t[1] - '0', t[0]});
+          } else {
+            // handle identity
+            for (auto qno = 0; qno < numqbits; qno++) {
+              inp_id.insert({qno, t[0]});
+            }
+          }
+        }
+
+        // Add the coefficient to the pauli term
+        this->addTerm(inp_id, stod(stripws(pauliterm[1])));
+      }
+    }
+  } catch (std::exception &e) {
+    std::cout << "error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+  ifs.close();
+  return EXIT_SUCCESS;
+}
 
 } // namespace core
 } // namespace quantum

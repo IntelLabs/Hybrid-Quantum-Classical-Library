@@ -1,5 +1,6 @@
 include(${CMAKE_CURRENT_LIST_DIR}/armadillo.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/ensmallen.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/boost_graph.cmake)
 if(PACKAGE_TESTS)
   include(${CMAKE_CURRENT_LIST_DIR}/googletest.cmake)
 endif()
