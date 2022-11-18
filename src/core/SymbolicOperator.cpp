@@ -60,7 +60,7 @@ void SymbolicOperator::addTerm(const pstring &inpp, ComplexDP k,
 // Constructor with vector of strings, e.g. {"X10","Z4"}
 // This allows for inputs like [X0 X0 Y2], which addTerm(pstring&) does not
 // allow for. Empty vector string mean identity is being added
-void SymbolicOperator::addTerm(vector<string> &vecstr, ComplexDP k) {
+void SymbolicOperator::addTerm(const vector<string> &vecstr, ComplexDP k) {
 
   // Create new object, that will ensure algebra is correct
   SymbolicOperator newop;
@@ -251,7 +251,7 @@ bool SymbolicOperator::operator==(const SymbolicOperator &rhs) {
 }
 
 // Get char string repr
-string SymbolicOperator::getCharString() {
+string SymbolicOperator::getCharString() const {
 
   string strP = "";
 
@@ -259,7 +259,7 @@ string SymbolicOperator::getCharString() {
     return "0.0";
   }
 
-  for (MapPString::iterator it = op_sum.begin(); it != op_sum.end(); it++) {
+  for (auto it = op_sum.begin(); it != op_sum.end(); it++) {
 
     pstring opstring = it->first;
     ComplexDP k = it->second;
@@ -281,10 +281,10 @@ string SymbolicOperator::getCharString() {
 }
 
 // Get number of terms
-int SymbolicOperator::getNumTerms() { return this->op_sum.size(); }
+int SymbolicOperator::getNumTerms() const { return this->op_sum.size(); }
 
 // Get ordered list of pstrings. Needed to interpret e.g. QWC graph.
-vector<pstring> SymbolicOperator::getOrderedPStringList() {
+vector<pstring> SymbolicOperator::getOrderedPStringList() const {
 
   vector<pstring> listPStrings;
   for (auto it = this->op_sum.begin(); it != this->op_sum.end(); ++it) {

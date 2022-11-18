@@ -77,7 +77,7 @@ quantum_kernel void vqeQ2() {
   RX(QubitReg[1], QuantumVariableParams[7]);
 }
 
-double run_qkernel(Full_State_Simulator &iqs_device, const arma::mat &params,
+double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
                    SymbolicOperator &symbop,
                    std::map<int, std::set<pstring>> &m_qwc_groups) {
   int basis_change_variable_param_start_indx = 4;
@@ -114,7 +114,7 @@ double run_qkernel(Full_State_Simulator &iqs_device, const arma::mat &params,
 
     vqeQ2();
 
-    ProbReg = iqs_device.get_probabilities(qids);
+    ProbReg = iqs_device.getProbabilities(qids);
 
     double current_pstr_val = SymbolicOperatorUtils::getExpectValSetOfPaulis(
         symbop, m_qwc_group.second, ProbReg, N);
@@ -127,7 +127,7 @@ double run_qkernel(Full_State_Simulator &iqs_device, const arma::mat &params,
 class EnergyOfAnsatz {
 public:
   EnergyOfAnsatz(SymbolicOperator &_symbop, QWCMap &_m_qwc_groups,
-                 arma::mat &_params, Full_State_Simulator &_iqs_device)
+                 arma::mat &_params, FullStateSimulator &_iqs_device)
       : symbop(_symbop), m_qwc_groups(_m_qwc_groups), params(_params),
         iqs_device(_iqs_device) {}
 
@@ -143,7 +143,7 @@ private:
   const arma::mat &params;
   SymbolicOperator &symbop;
   QWCMap &m_qwc_groups;
-  Full_State_Simulator &iqs_device;
+  FullStateSimulator &iqs_device;
 };
 
 int main() {
@@ -177,9 +177,9 @@ int main() {
   QuantumVariableParams[3] = params_spsa[3];
 
   /// Setup quantum device
-  Iqs_Config iqs_config(/*num_qubits*/ N,
+  IqsConfig iqs_config(/*num_qubits*/ N,
                         /*simulation_type*/ "noiseless");
-  Full_State_Simulator iqs_device(iqs_config);
+  FullStateSimulator iqs_device(iqs_config);
   if (QRT_ERROR_SUCCESS != iqs_device.ready()) {
     return -1;
   }

@@ -97,14 +97,14 @@ public:
   /// @brief Get the expectation value for a set of pauli strings/objects
   ///
   /// @param symbop - Symbolic representation
-  /// @param pstr - Set of pauli operators
+  /// @param s_pstr - Set of pauli operators
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
   /// @param num_qubits - Number of qubits
   /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
   static double getExpectValSetOfPaulis(SymbolicOperator &symbop,
-                                        std::set<pstring> &s_pstr,
+                                        const std::set<pstring> &s_pstr,
                                         const std::vector<double> ProbReg,
                                         int num_qubits, double eps = 0.0);
 
@@ -135,21 +135,21 @@ public:
   /// @param s_pstr - Set of pauli strings/objects
   /// @param variable_params - Variable Parameters
   /// @param num_qbits - Number of qubits
-  static void applyBasisChange(std::set<pstring> &s_pstr,
+  static void applyBasisChange(const std::set<pstring> &s_pstr,
                                std::vector<double> &variable_params,
                                int num_qbits, bool qwc_check = false);
 
-  static QWCMap getQubitwiseCommutationGroups(SymbolicOperator &symbop,
+  /// @brief Get the qubitwise commutating groups
+  /// @param symbop symbolic operator object
+  /// @param num_qbits number of qubits
+  /// @return map of qubitwise commutation groups
+  static QWCMap getQubitwiseCommutationGroups(const SymbolicOperator &symbop,
                                               int num_qbits);
 
-  /// @brief Finds the first pauli operator in the pauli string
-  /// @param pstr - Pauli string
-  /// @return
-  static char findFirstPauliStringBasis(const pstring &pstr);
-
-}; // end of class SymbolicOperator
+}; // end of class SymbolicOperatorUtils
 
 std::ostream &operator<<(std::ostream &s, const QWCMap &qwc_groups_mapping);
+std::ostream &operator<<(std::ostream &s, const std::set<pstring> &qwc_group);
 
 } // namespace core
 } // namespace quantum
