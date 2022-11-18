@@ -291,6 +291,26 @@ void SymbolicOperatorUtils::applyBasisChange(
   }
 }
 
+SymbolicOperator
+SymbolicOperatorUtils::getFoldedHamiltonian(SymbolicOperator &symbop,
+                                                  double gamma) {
+  // (H - γI)^2 = H^2 - 2*γI*H + γI^I
+  // Create a SymbolicOperator object for gamma
+  SymbolicOperator gamma_symbop;
+  gamma_symbop.addIdentTerm(gamma);
+
+  // Create a SymbolicOperator object for coefficient 2
+  SymbolicOperator coeff;
+  coeff.addIdentTerm(-2);
+
+  // Create a SymbolicOperator object for negative identity to propagate sign
+  SymbolicOperator H_folded =
+      symbop * symbop +
+      (coeff * symbop * gamma_symbop) +
+      gamma_symbop * gamma_symbop;
+  return H_folded;
+}
+
 std::ostream &operator<<(std::ostream &s, const QWCMap &qwc_groups) {
   s << "\n";
   for (const auto &qwc_group : qwc_groups) {

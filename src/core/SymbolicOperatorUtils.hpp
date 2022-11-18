@@ -146,6 +146,13 @@ public:
   static QWCMap getQubitwiseCommutationGroups(const SymbolicOperator &symbop,
                                               int num_qbits);
 
+  /// @brief Get the folded hamiltonian derived from the original hamiltonian
+  /// @param symbop SymbolicOperator object of the original hamiltonian
+  /// @param gamma Gamma value
+  /// @return SymbolicOperator of the folded hamiltonian
+  static SymbolicOperator getFoldedHamiltonian(SymbolicOperator &symbop,
+                                                     double gamma);
+
 }; // end of class SymbolicOperatorUtils
 
 std::ostream &operator<<(std::ostream &s, const QWCMap &qwc_groups_mapping);

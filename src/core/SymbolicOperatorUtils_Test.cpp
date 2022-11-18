@@ -649,7 +649,7 @@ TEST(QWCTests, Complete) {
   // Use getExcitedStateHamiltonian method w/ expected values from the above
   // test
   double gamma = 0.5;
-  folded_H = SymbolicOperatorUtils::getExcitedStateHamiltonian(orig_H, gamma);
+  folded_H = SymbolicOperatorUtils::getFoldedHamiltonian(orig_H, gamma);
 
   EXPECT_EQ(qwcmat, Vec2DMat({{0, 0, 0}, {0, 0, 1}, {0, 1, 0}}));
 
