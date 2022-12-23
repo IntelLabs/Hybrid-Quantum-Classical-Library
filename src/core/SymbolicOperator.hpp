@@ -35,8 +35,8 @@ using pstring = std::set<op_pair>;
 using ComplexDP = std::complex<double>;
 using MapPString = std::map<pstring, ComplexDP>;
 using Vec2DMat = std::vector<std::vector<int>>;
-// graph color -> set of commuting terms
-using QWCMap = std::map<int, std::set<pstring>>;
+using QWCMap =
+    std::map<int, std::set<pstring>>; // graph color -> set of commuting terms
 
 ///
 /// @brief Symbolic Operator Class
@@ -64,7 +64,7 @@ public:
   ///@param vecstr - List of Pauli strings
   ///@param k - Arbitrary coefficient
   ///
-  void addTerm(std::vector<std::string> &vecstr, ComplexDP k = 1);
+  void addTerm(const std::vector<std::string> &vecstr, ComplexDP k = 1);
 
   ///
   ///@brief Add identity term with arbitrary coefficient
@@ -86,21 +86,21 @@ public:
   ///
   ///@return std::string
   ///
-  std::string getCharString();
+  std::string getCharString() const;
 
   ///
   ///@brief Get the Num Terms object
   ///
   ///@return int
   ///
-  int getNumTerms();
+  int getNumTerms() const;
 
   ///
   ///@brief Get the Ordered P String List object
   ///
   ///@return std::vector<pstring>
   ///
-  std::vector<pstring> getOrderedPStringList();
+  std::vector<pstring> getOrderedPStringList() const;
 
   ///
   ///@brief Remove all terms

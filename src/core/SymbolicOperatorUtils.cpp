@@ -200,7 +200,7 @@ double SymbolicOperatorUtils::getExpectValSetOfPaulis(
 }
 
 double SymbolicOperatorUtils::getExpectValSetOfPaulis(
-    SymbolicOperator &symbop, std::set<pstring> &s_pstr,
+    SymbolicOperator &symbop, const std::set<pstring> &s_pstr,
     const std::vector<double> ProbReg, int num_qbits, double eps) {
   double exp_val = 0.0;
 
@@ -226,64 +226,39 @@ double SymbolicOperatorUtils::getExpectVal(SymbolicOperator &symbop,
   return exp_val;
 }
 
-char SymbolicOperatorUtils::findFirstPauliStringBasis(const pstring &pstr) {
-  char first_pstr_basis;
-  // Find first basis change
-  if (!pstr.empty()) {
-    first_pstr_basis = pstr.begin()->second;
-    if (first_pstr_basis != 'X' && first_pstr_basis != 'Y' &&
-        first_pstr_basis != 'Z') {
-      throw std::invalid_argument("Char must be in {X,Y,Z}");
-    }
-  } else {
-    throw std::logic_error("Empty Pauli string set");
-  }
-  return first_pstr_basis;
-}
-
 void SymbolicOperatorUtils::applyBasisChange(
     const pstring &pstr, std::vector<double> &variable_params, int num_qbits) {
+  if (variable_params.empty()) {
+    variable_params = std::vector<double>(num_qbits * 2, 0);
+  }
 
-  char first_pstr_basis = findFirstPauliStringBasis(pstr);
-  for (auto i = 0; i < num_qbits; ++i) {
-    auto foundX = pstr.find(op_pair(i, 'X'));
-    auto foundY = pstr.find(op_pair(i, 'Y'));
-    auto foundZ = pstr.find(op_pair(i, 'Z'));
+  for (auto idx = 0; idx < num_qbits; ++idx) {
+    auto foundX = pstr.find(op_pair(idx, 'X'));
+    auto foundY = pstr.find(op_pair(idx, 'Y'));
+    auto foundZ = pstr.find(op_pair(idx, 'Z'));
 
+    int basis_step_diff = 2;
     if (foundX != pstr.end()) {
-      variable_params.push_back(FP_PIby2);
-      variable_params.push_back(0);
+      variable_params[basis_step_diff * idx] = FP_PIby2;
+      variable_params[basis_step_diff * idx + 1] = 0;
     } else if (foundY != pstr.end()) {
-      variable_params.push_back(0);
-      variable_params.push_back(FP_PIby2);
+      variable_params[basis_step_diff * idx] = 0;
+      variable_params[basis_step_diff * idx + 1] = FP_PIby2;
     } else if (foundZ != pstr.end()) {
-      variable_params.push_back(0);
-      variable_params.push_back(0);
-    } else {
-      if (first_pstr_basis == 'X') {
-        variable_params.push_back(FP_PIby2);
-        variable_params.push_back(0);
-      } else if (first_pstr_basis == 'Y') {
-        variable_params.push_back(0);
-        variable_params.push_back(FP_PIby2);
-      } else if (first_pstr_basis == 'Z') {
-        variable_params.push_back(0);
-        variable_params.push_back(0);
-      }
+      variable_params[basis_step_diff * idx] = 0;
+      variable_params[basis_step_diff * idx + 1] = 0;
     }
   }
 }
 
-QWCMap
-SymbolicOperatorUtils::getQubitwiseCommutationGroups(SymbolicOperator &symbop,
-                                                     int num_qbits) {
+QWCMap SymbolicOperatorUtils::getQubitwiseCommutationGroups(
+    const SymbolicOperator &symbop, int num_qbits) {
 
   Vec2DMat qwcmat = SymbolicOperatorUtils::qubitwiseCommutation(symbop);
   std::vector<int> coloring = SymbolicOperatorUtils::getGroupsQWC(qwcmat);
   QWCMap qbtwise_comm_groups;
   for (auto pos = 0; pos < coloring.size(); pos++) {
     const auto ord_list = symbop.getOrderedPStringList();
-    // qbtwise_comm_groups[coloring[pos]].insert(symbop.get_op_sum()[ord_list[pos]]);
     qbtwise_comm_groups[coloring[pos]].emplace(ord_list[pos]);
   }
 
@@ -291,7 +266,7 @@ SymbolicOperatorUtils::getQubitwiseCommutationGroups(SymbolicOperator &symbop,
 }
 
 void SymbolicOperatorUtils::applyBasisChange(
-    std::set<pstring> &s_pstr, std::vector<double> &variable_params,
+    const std::set<pstring> &s_pstr, std::vector<double> &variable_params,
     int num_qbits, bool qwc_check) {
 
   if (qwc_check) {
@@ -307,36 +282,58 @@ void SymbolicOperatorUtils::applyBasisChange(
     }
   }
 
+  if (variable_params.empty()) {
+    variable_params = std::vector<double>(num_qbits * 2, 0);
+  }
+
   for (const auto &pstr : s_pstr) {
-    for (auto idx = 0; idx < num_qbits; ++idx) {
-      auto foundX = pstr.find(op_pair(idx, 'X'));
-      auto foundY = pstr.find(op_pair(idx, 'Y'));
-      auto foundZ = pstr.find(op_pair(idx, 'Z'));
-      if (foundX != pstr.end()) {
-        variable_params.push_back(FP_PIby2);
-        variable_params.push_back(0);
-      } else if (foundY != pstr.end()) {
-        variable_params.push_back(0);
-        variable_params.push_back(FP_PIby2);
-      } else if (foundZ != pstr.end()) {
-        variable_params.push_back(0);
-        variable_params.push_back(0);
-      }
-    }
+    applyBasisChange(pstr, variable_params, num_qbits);
   }
 }
 
-std::ostream &operator<<(std::ostream &s, const QWCMap &qwc_groups_mapping) {
+SymbolicOperator
+SymbolicOperatorUtils::getFoldedHamiltonian(SymbolicOperator &symbop,
+                                                  double gamma) {
+  // (H - γI)^2 = H^2 - 2*γI*H + γI^I
+  // Create a SymbolicOperator object for gamma
+  SymbolicOperator gamma_symbop;
+  gamma_symbop.addIdentTerm(gamma);
+
+  // Create a SymbolicOperator object for coefficient 2
+  SymbolicOperator coeff;
+  coeff.addIdentTerm(-2);
+
+  // Create a SymbolicOperator object for negative identity to propagate sign
+  SymbolicOperator H_folded =
+      symbop * symbop +
+      (coeff * symbop * gamma_symbop) +
+      gamma_symbop * gamma_symbop;
+  return H_folded;
+}
+
+std::ostream &operator<<(std::ostream &s, const QWCMap &qwc_groups) {
   s << "\n";
-  for (const auto &qwc_group_mapping : qwc_groups_mapping) {
-    s << "Group " << qwc_group_mapping.first << "\n";
-    for (const auto &s_pstr : qwc_group_mapping.second) {
+  for (const auto &qwc_group : qwc_groups) {
+    s << "Group " << qwc_group.first << "\n";
+    for (const auto &s_pstr : qwc_group.second) {
       s << "\t[ ";
       for (const auto &pstr : s_pstr) {
         s << pstr.second << std::to_string(pstr.first) << " ";
       }
       s << "]\n";
     }
+  }
+  return s;
+}
+
+std::ostream &operator<<(std::ostream &s, const std::set<pstring> &qwc_group) {
+  s << "\n";
+  for (const auto &s_pstr : qwc_group) {
+    s << "\t[ ";
+    for (const auto &pstr : s_pstr) {
+      s << pstr.second << std::to_string(pstr.first) << " ";
+    }
+    s << "]\n";
   }
   return s;
 }

@@ -175,7 +175,7 @@ quantum_kernel void tfdQ4() {
   RX(QubitReg[3], QuantumVariableParams[11]);
 }
 
-double run_qkernel(Full_State_Simulator &iqs_device, const arma::mat &params,
+double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
                    SymbolicOperator &symbop, QWCMap &m_qwc_groups) {
   // start point in the global parameter array corresponding to the basis change
   int basis_change_variable_param_start_indx = 4;
@@ -218,7 +218,7 @@ double run_qkernel(Full_State_Simulator &iqs_device, const arma::mat &params,
     // performing the experiment, and storing the data in ProbReg
     tfdQ4();
 
-    ProbReg = iqs_device.get_probabilities(qids);
+    ProbReg = iqs_device.getProbabilities(qids);
 
     double current_pstr_val = SymbolicOperatorUtils::getExpectValSetOfPaulis(
         symbop, m_qwc_group.second, ProbReg, N);
@@ -232,7 +232,7 @@ double run_qkernel(Full_State_Simulator &iqs_device, const arma::mat &params,
 // This function is directly called by the dlib optimization routine
 double ansatz_run_lambda(SymbolicOperator &symbop, QWCMap &m_qwc_groups,
                          const arma::mat &params, double inv_temp,
-                         Full_State_Simulator &iqs_device) {
+                         FullStateSimulator &iqs_device) {
   // loading the new variational angles into the special global array for hybrid
   // compilation
   QuantumVariableParams[0] = params(0);
@@ -250,7 +250,7 @@ class EnergyOfAnsatz {
 public:
   EnergyOfAnsatz(SymbolicOperator &symbop_, QWCMap &_m_qwc_groups,
                  arma::mat &params_, double beta_,
-                 Full_State_Simulator &_iqs_device)
+                 FullStateSimulator &_iqs_device)
       : symbop(symbop_), m_qwc_groups(_m_qwc_groups), params(params_),
         beta(beta_), iqs_device(_iqs_device) {}
 
@@ -269,7 +269,7 @@ private:
   const arma::mat &params;
   double beta;
   QWCMap &m_qwc_groups;
-  Full_State_Simulator &iqs_device;
+  FullStateSimulator &iqs_device;
 };
 
 int main() {
@@ -338,9 +338,9 @@ int main() {
     arma::mat params_sa(std::vector<double>{0, 0, 0, 0});
 
     /// Setup quantum device
-    Iqs_Config iqs_config(/*num_qubits*/ N,
+    IqsConfig iqs_config(/*num_qubits*/ N,
                           /*simulation_type*/ "noiseless");
-    Full_State_Simulator iqs_device(iqs_config);
+    FullStateSimulator iqs_device(iqs_config);
     if (QRT_ERROR_SUCCESS != iqs_device.ready()) {
       return -1;
     }
