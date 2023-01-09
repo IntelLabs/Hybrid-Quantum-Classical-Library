@@ -666,6 +666,32 @@ TEST(QWCTests, Complete) {
   ASSERT_TRUE(v_variable_params.size() == gold_v_variable_params.size());
   EXPECT_EQ(v_variable_params, gold_v_variable_params);
   EXPECT_DOUBLE_EQ(actual_cost, expected_cost);
+
+  // Two Qubit QAOA
+  // H = 0.5 * Z0Z1
+  num_qubits = 2;
+  int num_layers = 1;
+  SymbolicOperator orig_H_QAOA;
+  pstring inp_z1{{0, 'Z'}, {1, 'Z'}};
+  orig_H_QAOA.addTerm(inp_z1, 0.5);
+
+  actual_cost = 0.0;
+
+  z = {{make_pair<int, char>(0, 'Z')}, {make_pair<int, char>(1, 'Z')}};
+  expected_cost = -0.49989278853753549;
+
+  z_prob_reg = {1.1708125638236911873e-08, 9.9978459615314041464e-01,
+                1.0819238439510232039e-04, 1.0719975433892658370e-04};
+  precomputed_prob_reg_map = {{0, z_prob_reg}};
+
+  for (int layer = 0; layer < num_layers; layer++) {
+    for (const auto &pstr : orig_H_QAOA.getOrderedPStringList()) {
+      actual_cost += orig_H_QAOA.op_sum[pstr].real() *
+                     SymbolicOperatorUtils::getExpectValSglPauli(
+                         pstr, precomputed_prob_reg_map[0], num_qubits);
+    }
+  }
+  EXPECT_DOUBLE_EQ(actual_cost, expected_cost);
 }
 
 TEST(UtilTests, Complete) {
