@@ -1,0 +1,22 @@
+set(DLIB_PREFIX dlib-v19.24)
+set(DLIB_DIRNAME dlib-19.24)
+set(DLIB_LIBNAME dlib)
+set(DLIB_INCNAME dlib)
+
+set(DLIB_URL ${CMAKE_CURRENT_SOURCE_DIR}/${DLIB_PREFIX}.tar.gz)
+set(DLIB_EXTRACT_DIR ${CMAKE_BINARY_DIR}/third_party/dlib)
+set(DLIB_SRC_DIR ${DLIB_EXTRACT_DIR}/${DLIB_DIRNAME})
+set(DLIB_INCLUDE_DIR ${DLIB_EXTRACT_DIR}/${DLIB_DIRNAME}/include)
+
+execute_process( COMMAND ${CMAKE_COMMAND} -E tar xzf ${DLIB_URL}
+                 WORKING_DIRECTORY ${DLIB_EXTRACT_DIR})
+
+include(ExternalProject)
+ExternalProject_Add(dlib
+  URL               ${DLIB_URL}
+  SOURCE_DIR        ${DLIB_SRC_DIR}
+  BINARY_DIR        "${CMAKE_EXTRACT_DIR}"
+  CMAKE_CACHE_ARGS  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}
+  CMAKE_COMMAND     ${CMAKE_COMMAND}
+)
+

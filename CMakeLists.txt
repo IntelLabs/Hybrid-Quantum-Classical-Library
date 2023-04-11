@@ -91,6 +91,12 @@ add_subdirectory(third_party)
 # build source directory
 add_subdirectory(src)
 
+#build third-party ensmallen lib
+option(BUILD_ENSMALLEN_LIB "Build the third-party ensmallen library" ON)
+
+#build third-party dlib lib
+option(BUILD_DLIB_LIB "Build the third-party dlib library" ON)
+
 # build tests
 option(PACKAGE_TESTS "Build the tests" OFF)
 if(PACKAGE_TESTS)
