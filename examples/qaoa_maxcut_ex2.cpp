@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2022-2023 Intel Corporation.
+// Copyright  2023 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -18,55 +18,93 @@
 // Quantum Approximate Optimization Algorithm
 
 //
-// 4-qubit Maxcut example
+// 5-qubit Maxcut example
 // Reference: https://pennylane.ai/qml/demos/tutorial_qaoa_maxcut.html
-//        _ _ _ _ _ _ _ _ _
-//   0╭──/─────────────╮3 /
-//  A │ /              │ /
-//    │/               │/
-//    /                /
-//   /│               /│
-//  /1╰──────────────/─╯2
-// /       B        /
 //
-// Graph = [(0, 1), (0, 3), (1, 2), (2, 3)]
+// For a graph, a maximum cut is a cut whose size is at least the size of any
+// other cut. That is, it is a partition of the graph's vertices into two
+// complementary sets S and T, such that the number of edges between S and T is
+// as large as possible. Finding such a cut is known as the max-cut problem -
+// Wikipedia
 //
-// 0: ──RX(0.10)─╭●──RZ(0.10)─╭●──RZ(0.10)─────────────────────────────────┤ <Z>
-// 1: ──RX(0.10)─╰────────────┤────────────╭●───RZ(0.10)───────────────────┤ <Z>
-// 2: ──RX(0.10)──────────────┤────────────╰─────────────╭●---RZ(0.10)─────┤ <Z>
-// 3: ──RX(0.10)──────────────╰──────────────────────────╰─────────────────┤ <Z>
+//   _______
+//  /       \    A
+// /      1__\________2
+// \     ╱|   \       |
+//  \   / |    \      |
+//   \ /  |     \     |
+//    /\  |      \    |
+// 0 /  \ |       \   |
+//   \   \|        \  |
+//    \   |\        \ |
+//     \  | \    B   \|
+//      \ |  \        |\
+//       \|___\_______| \
+//       3     \      4
 //
-
+// Graph = [(0, 1), (0, 3), (1, 2), (1, 3), (2, 4), (3, 4)]
 //
-// Theoretical value C = 4; The max cut is shown in the above graph which
-// divides the graph into A & B group resulting into 4 edges being cut through.
+// 0:
+// ──RX(0.10)─╭●──RZ(0.10)─╭●──RZ(0.10)─────────────────────────────────────────────────────────┤
+// <Z> 1:
+// ──RX(0.10)─╰────────────┤────────────╭●──RZ(0.10)──╭●──RZ(0.10)──────────────────────────────┤
+// <Z> 2:
+// ──RX(0.10)──────────────┤────────────╰─────────────┤─────────────╭●──RZ(0.10)────────────────┤
+// <Z> 3:
+// ──RX(0.10)──────────────╰──────────────────────────╰─────────────┤─────────────╭●──RZ(0.10)──┤
+// <Z> 4:
+// ──RX(0.10)───────────────────────────────────────────────────────╰─────────────╰─────────────┤
+// <Z>
 //
-
+//
+// Theoretical value C = 5; The max cut is shown in the above graph which
+// divides the graph into A & B group resulting into 5 edges being cut through.
 //
 // Expected Output
 // $ export HQ=<path to project directory>
 // $ ./intel-quantum-compiler -I $HQ/build/include -L $HQ/build/lib -larmadillo
-// -lhqcl $HQ/examples/qaoa_maxcut.cpp
-// $ ./qaoa_maxcut
+// -lhqcl $HQ/examples/qaoa_maxcut_ex2.cpp
+// $ ./qaoa_maxcut_ex2
 //
 // Original Hamiltonian:
-// -2.000000 [ ]
+// -3.000000 [ ]
 // 0.500000 [ Z0 Z1 ]
 // 0.500000 [ Z0 Z3 ]
 // 0.500000 [ Z1 Z2 ]
-// 0.500000 [ Z2 Z3 ]
-//
+// 0.500000 [ Z1 Z3 ]
+// 0.500000 [ Z2 Z4 ]
+// 0.500000 [ Z3 Z4 ]
+
 // Quantum approximate optimization algorithm (QAOA) for the MaxCut Problem
 // Optimized Parameters using Simulated Annealing (SA):
-//    2.1137e+01
-//    2.7267e+01
-//   -1.1102e+02
-//    5.0973e+00
-//    8.9200e+01
-//    9.7317e+01
-// Simulated Annealing (SA) execution count: 26433
-// Maximum Cut for the given graph is C = 4
+//     8.6377
+//    19.9916
+//    18.8962
+//    29.7367
+//     0.5858
+//     1.0941
+//    18.1669
+//   -31.3474
+//     6.1454
+//    -2.4512
+//   -18.7885
+//    10.6296
+//    14.7831
+//    17.6196
+//     7.3579
+//    11.7967
+//   -30.7771
+//    14.4257
+//    55.8855
+//     0.7003
+// Simulated Annealing (SA) execution count: 166369
+// Maximum Cut for the given graph is C = 3.99992
 //
+// Note: The actual output is not close to the expected output which is okay. Perhaps the 
+// the optimization algorithm used (Simulated Annealing in this case) does not get to the
+// expected output. Trying out different optimization algorithms may help get to the 
+// expected output. Also, adding more number of layers would help but might take longer time
+// to execute.
 
 /// Production mode
 #include <clang/Quantum/quintrinsics.h>
@@ -93,8 +131,8 @@ using namespace hybrid::quantum::core;
 using namespace iqsdk;
 
 // Initial setup
-const int N = 4;
-const int num_layers = 3;
+const int N = 5;
+const int num_layers = 10;   // Number of layering circuits
 qbit QubitReg[N];
 cbit CReg[N];
 
@@ -109,7 +147,7 @@ int steps_count = 0;
 ///
 ///@return quantum_kernel - quantum kernel object
 ///
-quantum_kernel void qaoaQ4() {
+quantum_kernel void qaoaQ5() {
   // Index to loop over later
   int Index = 0;
 
@@ -127,29 +165,40 @@ quantum_kernel void qaoaQ4() {
   for (int layer = 0; layer < num_layers; layer++) {
 
     // Part of original Hamiltonian
+    // Graph = [(0, 1), (0, 3), (1, 2), (1, 3), (2, 4), (3, 4)]
     // Z0Z1
     CNOT(QubitReg[0], QubitReg[1]);
     RZ(QubitReg[1], QuantumVariableParams[step_diff * layer]);
     CNOT(QubitReg[0], QubitReg[1]);
-
-    // Z1Z2
-    CNOT(QubitReg[1], QubitReg[2]);
-    RZ(QubitReg[2], QuantumVariableParams[step_diff * layer]);
-    CNOT(QubitReg[1], QubitReg[2]);
 
     // Z0Z3
     CNOT(QubitReg[0], QubitReg[3]);
     RZ(QubitReg[3], QuantumVariableParams[step_diff * layer]);
     CNOT(QubitReg[0], QubitReg[3]);
 
-    // Z2Z3
-    CNOT(QubitReg[2], QubitReg[3]);
+    // Z1Z2
+    CNOT(QubitReg[1], QubitReg[2]);
+    RZ(QubitReg[2], QuantumVariableParams[step_diff * layer]);
+    CNOT(QubitReg[1], QubitReg[2]);
+
+    // Z1Z3
+    CNOT(QubitReg[1], QubitReg[3]);
     RZ(QubitReg[3], QuantumVariableParams[step_diff * layer]);
-    CNOT(QubitReg[2], QubitReg[3]);
+    CNOT(QubitReg[1], QubitReg[3]);
+
+    // Z2Z4
+    CNOT(QubitReg[2], QubitReg[4]);
+    RZ(QubitReg[4], QuantumVariableParams[step_diff * layer]);
+    CNOT(QubitReg[2], QubitReg[4]);
+
+    // Z3Z4
+    CNOT(QubitReg[3], QubitReg[4]);
+    RZ(QubitReg[4], QuantumVariableParams[step_diff * layer]);
+    CNOT(QubitReg[3], QubitReg[4]);
 
     // Part of mixer Hamiltonian w/ X rotations on all qubits
     for (Index = 0; Index < N; Index++) {
-      RX(QubitReg[Index], 2 * QuantumVariableParams[step_diff * layer + 1]);
+      RX(QubitReg[Index], QuantumVariableParams[step_diff * layer + 1]);
     }
   }
 }
@@ -182,7 +231,7 @@ double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
       qids.push_back(std::ref(QubitReg[qubit]));
     }
 
-    qaoaQ4();
+    qaoaQ5();
 
     probs = iqs_device.getProbabilities(qids);
 
@@ -227,18 +276,25 @@ int main() {
   pstring inp_z1{{0, 'Z'}, {1, 'Z'}};
   H_symbop.addTerm(inp_z1, 0.5);
 
-  pstring inp_z2{{1, 'Z'}, {2, 'Z'}};
+  pstring inp_z2{{0, 'Z'}, {3, 'Z'}};
   H_symbop.addTerm(inp_z2, 0.5);
 
-  pstring inp_z3{{0, 'Z'}, {3, 'Z'}};
+  pstring inp_z3{{1, 'Z'}, {2, 'Z'}};
   H_symbop.addTerm(inp_z3, 0.5);
 
-  pstring inp_z4{{2, 'Z'}, {3, 'Z'}};
+  pstring inp_z4{{1, 'Z'}, {3, 'Z'}};
   H_symbop.addTerm(inp_z4, 0.5);
 
-  H_symbop.addIdentTerm(-2);
+  pstring inp_z5{{2, 'Z'}, {4, 'Z'}};
+  H_symbop.addTerm(inp_z5, 0.5);
 
-  // H_symbop = 0.5 * Z0Z1 + 0.5 * Z1Z2 + 0.5 * Z0Z3 + 0.5 * Z2Z3 - 2
+  pstring inp_z6{{3, 'Z'}, {4, 'Z'}};
+  H_symbop.addTerm(inp_z6, 0.5);
+
+  H_symbop.addIdentTerm(-3);
+
+  // H_symbop = 3 * I - 0.5 * Z0Z1 - 0.5 * Z0Z3 - 0.5 * Z1Z2 - 0.5 * Z1Z3 - 0.5
+  // * Z2Z4 - 0.5 * Z3Z4
   std::string H_symbop_charstring = H_symbop.getCharString();
   std::cout << "Original Hamiltonian:\n" << H_symbop_charstring << "\n";
 
