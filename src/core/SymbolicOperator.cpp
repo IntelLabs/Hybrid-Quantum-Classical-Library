@@ -60,7 +60,7 @@ void SymbolicOperator::addTerm(const pstring &inpp, ComplexDP k,
 // Constructor with vector of strings, e.g. {"X10","Z4"}
 // This allows for inputs like [X0 X0 Y2], which addTerm(pstring&) does not
 // allow for. Empty vector string mean identity is being added
-void SymbolicOperator::addTerm(const vector<string> &vecstr, ComplexDP k) {
+void SymbolicOperator::addTerm(const std::vector<std::string> &vecstr, ComplexDP k) {
 
   // Create new object, that will ensure algebra is correct
   SymbolicOperator newop;
