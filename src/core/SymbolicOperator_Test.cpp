@@ -46,7 +46,7 @@ string tmpfilefortest(const string &prefix, const string &dir) {
   cs[s.copy(cs, s.size())] = '\0';
 
   // create tmpfile and get file descriptor
-  int fd = mkstemp(cs);
+  int fd = mkostemp(cs, S_IXUSR);
   if (fd == -1 || close(fd) == -1) {
     std::cout << "Error creating temporary file (" << errno
               << "): " << strerror(errno);
@@ -371,8 +371,7 @@ TEST(ExpectationValueTests, Complete) {
 
 TEST(ConstructHamiltonianFromFileTests, Complete) {
   SymbolicOperator symbop;
-  symbop.construct_hamiltonian_from_file(
-      "../src/core/bosehubb_gray_d-4_Nx-002.ham");
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file("../src/core/bosehubb_gray_d-4_Nx-002.ham") == EXIT_SUCCESS);
 
   std::vector<double> ProbReg{0.1, 0.2, 0.1, 0.1};
   std::vector<double> expected{1.8000000000000007};
@@ -404,11 +403,12 @@ TEST(ConstructHamiltonianFromFileTests, Complete) {
   actual.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg, 2));
 
   ASSERT_TRUE(expected.size() == actual.size());
-  for (int i = 0; i < expected.size(); ++i) {
+  int ex_size = expected.size();
+  for (int i = 0; i < ex_size; ++i) {
     EXPECT_DOUBLE_EQ(expected[i], actual[i]);
   }
 
-  remove(ham_file.c_str());
+  ASSERT_TRUE(remove(ham_file.c_str()) == EXIT_SUCCESS);
 
   // test 3
   // Z is not assigned a qubit number which makes it invalid
