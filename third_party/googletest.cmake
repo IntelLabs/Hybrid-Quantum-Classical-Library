@@ -1,4 +1,4 @@
-set(GOOGLETEST_PREFIX googletest-release-1.11.0)
+set(GOOGLETEST_PREFIX googletest-1.13.0)
 set(GOOGLETEST_LIBNAME googletest)
 set(GOOGLETEST_INCNAME googletest)
 
