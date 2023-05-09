@@ -81,9 +81,9 @@ public:
                              double eps = 0.0, METHOD method = METHOD::DEFAULT);
 
   ///
-  /// @brief Get the expectation value for a set of pauli strings/objects
+  /// @brief Get the expectation value for a list of pauli strings/objects
   ///
-  /// @param pstr - Set of pauli operators
+  /// @param v_pstr - List of pauli operators
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
   /// @param num_qubits - Number of qubits
   /// @param eps - Desired precision (epsilon)
@@ -135,6 +135,7 @@ public:
   /// @param s_pstr - Set of pauli strings/objects
   /// @param variable_params - Variable Parameters
   /// @param num_qbits - Number of qubits
+  /// @param qwc_check - Turn ON or OFF Qubit-wise Commutation check
   static void applyBasisChange(const std::set<pstring> &s_pstr,
                                std::vector<double> &variable_params,
                                int num_qbits, bool qwc_check = false);

@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2022 Intel Corporation.
+// Copyright 2022-2023 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -17,6 +17,117 @@
 // VQE
 // Variational Quantum Eigensolver
 // Excited states - Folded Spectrum Method
+
+//
+// Expected Output
+// $ export HQ=<path to project directory>
+// $ ./intel-quantum-compiler -I $HQ/build/include -L $HQ/build/lib -larmadillo -lhqcl $HQ/examples/excited_states_q2.cpp
+// $ ./excited_states_q2
+// Original Hamiltonian:
+// 0.500000 [ X0 ]
+// 0.500000 [ Z0 Z1 ]
+// 0.250000 [ X1 ]
+//
+// Number of Qubitwise Commutation (QWC) Groups for original hamiltonian: 2
+// Qubitwise Commutation (QWC) Groups:
+// Group 0
+// 	[ X0 ]
+// 	[ X1 ]
+// Group 1
+// 	[ Z0 Z1 ]
+//
+// Folded Hamiltonian:
+// 0.572500 [ ]
+// 0.100000 [ X0 ]
+// 0.250000 [ X0 X1 ]
+// 0.100000 [ Z0 Z1 ]
+// 0.050000 [ X1 ]
+//
+// Number of Qubitwise Commutation (QWC) Groups for folded hamiltonian : 2
+// Qubitwise Commutation (QWC) Groups:
+// Group 0
+// 	[ ]
+// 	[ X0 ]
+// 	[ X0 X1 ]
+// 	[ X1 ]
+// Group 1
+// 	[ Z0 Z1 ]
+//
+// Folded Hamiltonian:
+// 0.572500 [ ]
+// -0.100000 [ X0 ]
+// 0.250000 [ X0 X1 ]
+// -0.100000 [ Z0 Z1 ]
+// -0.050000 [ X1 ]
+//
+// Number of Qubitwise Commutation (QWC) Groups for folded hamiltonian : 2
+// Qubitwise Commutation (QWC) Groups:
+// Group 0
+// 	[ ]
+// 	[ X0 ]
+// 	[ X0 X1 ]
+// 	[ X1 ]
+// Group 1
+// 	[ Z0 Z1 ]
+//
+// Folded Hamiltonian:
+// 1.125000 [ ]
+// -0.750000 [ X0 ]
+// 0.250000 [ X0 X1 ]
+// -0.750000 [ Z0 Z1 ]
+// -0.375000 [ X1 ]
+//
+// Number of Qubitwise Commutation (QWC) Groups for folded hamiltonian : 2
+// Qubitwise Commutation (QWC) Groups:
+// Group 0
+// 	[ ]
+// 	[ X0 ]
+// 	[ X0 X1 ]
+// 	[ X1 ]
+// Group 1
+// 	[ Z0 Z1 ]
+//
+// Result for Original Hamiltonian:
+// Optimized Parameters using Simulated Annealing (SA):
+//   -3.0360e+01
+//    1.8335e+02
+//    1.3475e+02
+//    5.9896e+01
+// Simulated Annealing (SA) execution count: 29924
+// Total energy using Simulated Annealing (SA): -0.901388
+// Result for Folded Hamiltonian:
+// Optimized Parameters using Simulated Annealing (SA):
+//   -9.4919e+01
+//    2.9982e+02
+//    1.2226e+02
+//    1.5998e+02
+// Simulated Annealing (SA) execution count: 30732
+// Total energy using Simulated Annealing (SA): 0.210697
+// Result for Folded Hamiltonian 1:
+// Optimized Parameters using Simulated Annealing (SA):
+//   -8.1066e+01
+//    3.0961e+02
+//    1.8336e+02
+//    2.4858e+02
+// Simulated Annealing (SA) execution count: 62001
+// Total energy using Simulated Annealing (SA): 0.210697
+// Result for Folded Hamiltonian 2:
+// Optimized Parameters using Simulated Annealing (SA):
+//   -8.7668e+01
+//    4.5559e+02
+//    2.2223e+02
+//    3.2901e+02
+// Simulated Annealing (SA) execution count: 105452
+// Total energy using Simulated Annealing (SA): 0.0229182
+//
+// Ground state with respect to the original hamiltonian: -0.901388
+//
+// First excited state with respect to the original hamiltonian: -0.559017
+//
+// Second excited state with respect to the original hamiltonian: 0.559017
+//
+// Third excited state with respect to the original hamiltonian: 0.901387
+//
 
 /// Production mode
 #include <clang/Quantum/quintrinsics.h>
@@ -42,15 +153,22 @@ using namespace arma;
 using namespace hybrid::quantum::core;
 using namespace iqsdk;
 
+// Initial setup
 const int N = 2;
 qbit QubitReg[N];
 cbit CReg[N];
 
-/* Special global array to hold dynamic parameters for quantum algorithm */
+// Special global array to hold dynamic parameters for quantum algorithm
 double QuantumVariableParams[4 + N * 2];
 
+// Optimization steps
 int steps_count = 0;
 
+///
+///@brief  defines the quantum kernel
+///
+///@return quantum_kernel - quantum kernel object
+///
 quantum_kernel void vqeQ2() {
 
   // Index to loop over later
@@ -78,6 +196,15 @@ quantum_kernel void vqeQ2() {
   RX(QubitReg[1], QuantumVariableParams[7]);
 }
 
+///
+///@brief executes the quantum kernel
+///
+///@param iqs_device - IQS device object
+///@param params - Optimization Parameters
+///@param symbop - SymbolicOperator object
+///@param m_qwc_groups - Qubit-wise commutation groups
+///@return double - expectation value
+///
 double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
                    SymbolicOperator &symbop, const QWCMap &m_qwc_groups) {
   int basis_change_variable_param_start_indx = 4;
@@ -124,6 +251,9 @@ double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
   return exp_val;
 }
 
+///
+///@brief Object class to apply optimization step
+///
 class EnergyOfAnsatz {
 public:
   EnergyOfAnsatz(SymbolicOperator &_symbop, QWCMap &_m_qwc_groups,
@@ -169,7 +299,7 @@ int main() {
   std::cout << "Qubitwise Commutation (QWC) Groups: " << m_qwc_groups_orig_ham
             << std::endl;
 
-  /// Setup quantum device
+  // Setup quantum device
   IqsConfig iqs_config(/*num_qubits*/ N,
                         /*simulation_type*/ "noiseless");
   FullStateSimulator iqs_device(iqs_config);
@@ -221,7 +351,7 @@ int main() {
 
   double gamma = -0.1;
   SymbolicOperator H_fold_symbop =
-      SymbolicOperatorUtils::getExcitedStateHamiltonian(H_symbop, gamma);
+      SymbolicOperatorUtils::getFoldedHamiltonian(H_symbop, gamma);
 
   charstring = H_fold_symbop.getCharString();
   std::cout << "Folded Hamiltonian:\n" << charstring << "\n";
@@ -273,7 +403,7 @@ int main() {
   //////////////////////////////////////////////////////////////////////
   gamma = 0.1;
   SymbolicOperator H_fold_symbop_1 =
-      SymbolicOperatorUtils::getExcitedStateHamiltonian(H_symbop, gamma);
+      SymbolicOperatorUtils::getFoldedHamiltonian(H_symbop, gamma);
 
   charstring = H_fold_symbop_1.getCharString();
   std::cout << "Folded Hamiltonian:\n" << charstring << "\n";
@@ -326,7 +456,7 @@ int main() {
   //////////////////////////////////////////////////////////////////////
   gamma = 0.75;
   SymbolicOperator H_fold_symbop_2 =
-      SymbolicOperatorUtils::getExcitedStateHamiltonian(H_symbop, gamma);
+      SymbolicOperatorUtils::getFoldedHamiltonian(H_symbop, gamma);
 
   charstring = H_fold_symbop_2.getCharString();
   std::cout << "Folded Hamiltonian:\n" << charstring << "\n";

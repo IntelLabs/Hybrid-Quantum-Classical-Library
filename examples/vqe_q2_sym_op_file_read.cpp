@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2021-2022 Intel Corporation.
+// Copyright 2021-2023 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -16,6 +16,40 @@
 //
 // VQE
 // Variational Quantum Eigensolver
+
+//
+// Expected Output
+// $ export HQ=<path to project directory>
+// $ ./intel-quantum-compiler -I $HQ/build/include -L $HQ/build/lib -larmadillo -lhqcl $HQ/examples/vqe_q2_sym_op_file_read.cpp
+// $ ./vqe_q2_sym_op_file_read $HQ/examples/ham.txt
+// Hamiltonian:
+// 0.500000 [ X0 ]
+// 0.500000 [ Z0 Z1 ]
+// 0.250000 [ X1 ]
+//
+// Number of Qubitwise Commutation (QWC) Groups : 2
+// Qubitwise Commutation (QWC) Groups:
+// Group 0
+// 	[ X0 ]
+// 	[ X1 ]
+// Group 1
+// 	[ Z0 Z1 ]
+//
+// Optimized Parameters using Simultaneous Perturbation Stochastic Approximation (SPSA):
+//   -0.4319
+//    0.4120
+//    1.1472
+//    0.2652
+// Simultaneous Perturbation Stochastic Approximation (SPSA) execution count: 2352
+// Total energy using Simultaneous Perturbation Stochastic Approximation(SPSA): -0.900455
+// Optimized Parameters using Simulated Annealing (SA):
+//   -9.4880e+01
+//    7.8065e+01
+//    1.1328e+02
+//    2.9739e+01
+// Simulated Annealing (SA) execution count: 31404
+// Total energy using Simulated Annealing (SA): -0.901388
+//
 
 /// Production mode
 #include <clang/Quantum/quintrinsics.h>
@@ -41,15 +75,22 @@
 using namespace hybrid::quantum::core;
 using namespace iqsdk;
 
+// Initial setup
 const int N = 2;
 qbit QubitReg[N];
 cbit CReg[N];
 
-/* Special global array to hold dynamic parameters for quantum algorithm */
+// Special global array to hold dynamic parameters for quantum algorithm
 double QuantumVariableParams[4 + N * 2];
 
+// Optimization steps
 static int steps_count = 0;
 
+///
+///@brief  defines the quantum kernel
+///
+///@return quantum_kernel - quantum kernel object
+///
 quantum_kernel void vqeQ2() {
 
   // Index to loop over later
@@ -77,6 +118,15 @@ quantum_kernel void vqeQ2() {
   RX(QubitReg[1], QuantumVariableParams[7]);
 }
 
+///
+///@brief executes the quantum kernel
+///
+///@param iqs_device - IQS device object
+///@param params - Optimization Parameters
+///@param symbop - SymbolicOperator object
+///@param m_qwc_groups - Qubit-wise commutation groups
+///@return double - expectation value
+///
 double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
                    SymbolicOperator &symbop,
                    std::map<int, std::set<pstring>> &m_qwc_groups) {
@@ -124,6 +174,9 @@ double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
   return total_energy;
 }
 
+///
+///@brief Object class to apply optimization step
+///
 class EnergyOfAnsatz {
 public:
   EnergyOfAnsatz(SymbolicOperator &_symbop,
@@ -177,7 +230,7 @@ int main(int argc, char *argv[]) {
   QuantumVariableParams[2] = params_spsa[2];
   QuantumVariableParams[3] = params_spsa[3];
 
-  /// Setup quantum device
+  // Setup quantum device
   IqsConfig iqs_config(/*num_qubits*/ N,
                         /*simulation_type*/ "noiseless");
   FullStateSimulator iqs_device(iqs_config);

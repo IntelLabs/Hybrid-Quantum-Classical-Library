@@ -299,6 +299,7 @@ Software License, version 1.0.
 
 4. Boost Graph Library
 
+5. Dlib C++ Library
 ----
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -326,7 +327,7 @@ DEALINGS IN THE SOFTWARE.
 
 -------------------------------------------------------------------------------
 
-5. GoogleTest
+6. GoogleTest
 
 BSD 3-Clause "New" or "Revised" License
 

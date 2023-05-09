@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2022 Intel Corporation.
+// Copyright 2022-2023 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -16,6 +16,29 @@
 //
 // VQE
 // Variational Quantum Eigensolver
+
+//
+// Expected Output
+// $ export HQ=<path to project directory>
+// $ ./intel-quantum-compiler -I $HQ/build/include -L $HQ/build/lib -larmadillo -lhqcl $HQ/examples/vqe_q1_sym_op.cpp
+// $ ./vqe_q1_sym_op
+// Hamiltonian:
+// 0.250000 [ X0 ]
+// 0.500000 [ Y0 ]
+
+// Number of Qubitwise Commutation (QWC) Groups : 2
+// Qubitwise Commutation (QWC) Groups:
+// Group 0
+// 	[ X0 ]
+// Group 1
+// 	[ Y0 ]
+
+// Optimized Parameters using Simulated Annealing (SA):
+//    7.0454e+01
+//    2.0028e+02
+// Simulated Annealing (SA) execution count: 32298
+// Total energy using Simulated Annealing (SA): -0.559038
+//
 
 /// Production mode
 #include <clang/Quantum/quintrinsics.h>
@@ -40,15 +63,22 @@
 using namespace hybrid::quantum::core;
 using namespace iqsdk;
 
+// Initial setup
 const int N = 1;
 qbit QubitReg[N];
 cbit CReg[N];
 
-/* Special global array to hold dynamic parameters for quantum algorithm */
+// Special global array to hold dynamic parameters for quantum algorithm
 double QuantumVariableParams[2 + N * 2];
 
+// Optimization steps
 static int steps_count = 0;
 
+///
+///@brief  defines the quantum kernel
+///
+///@return quantum_kernel - quantum kernel object
+///
 quantum_kernel void vqeQ1() {
 
   // Index to loop over later
@@ -68,6 +98,15 @@ quantum_kernel void vqeQ1() {
   RX(QubitReg[0], QuantumVariableParams[3]);
 }
 
+///
+///@brief executes the quantum kernel
+///
+///@param iqs_device - IQS device object
+///@param params - Optimization Parameters
+///@param symbop - SymbolicOperator object
+///@param m_qwc_groups - Qubit-wise commutation groups
+///@return double - expectation value
+///
 double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
                    SymbolicOperator &symbop,
                    std::map<int, std::set<pstring>> &m_qwc_groups) {
@@ -102,13 +141,6 @@ double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
     vqeQ1();
 
     ProbReg = iqs_device.getProbabilities(qids);
-    std::cout << "Prob Reg: \n";
-    for (const auto &pr : ProbReg) {
-      std::cout << std::scientific
-                << std::setprecision(
-                       std::numeric_limits<long double>::digits10 + 1)
-                << pr << " ";
-    }
 
     double current_pstr_val = SymbolicOperatorUtils::getExpectValSetOfPaulis(
         symbop, m_qwc_group.second, ProbReg, N);
@@ -118,6 +150,9 @@ double run_qkernel(FullStateSimulator &iqs_device, const arma::mat &params,
   return total_energy;
 }
 
+///
+///@brief Object class to apply optimization step
+///
 class EnergyOfAnsatz {
 public:
   EnergyOfAnsatz(SymbolicOperator &_symbop, QWCMap &_m_qwc_groups,
@@ -159,7 +194,7 @@ int main() {
   std::cout << "Qubitwise Commutation (QWC) Groups: " << m_qwc_groups
             << std::endl;
 
-  /// Setup quantum device
+  // Setup quantum device
   IqsConfig iqs_config(/*num_qubits*/ N,
                         /*simulation_type*/ "noiseless");
   FullStateSimulator iqs_device(iqs_config);

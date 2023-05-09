@@ -157,7 +157,7 @@ public:
   ///@brief Overloaded '*' to multiply SymbolicOperator with arbitrary
   /// coefficient
   /// TODO
-  ///@param inp_right
+  ///@param inp_right - SymbolicOperator
   ///@return SymbolicOperator
   ///
   // SymbolicOperator operator*(const ComplexDP &inp_right);
@@ -173,25 +173,25 @@ public:
   bool operator==(const SymbolicOperator &rhs);
 
   /// @brief Strips whitespace from LHS
-  /// @param s
-  /// @param matches
+  /// @param s - String that need to be stripped
+  /// @param matches - Pattern that needs to be removed
   /// @return stripped whitespace string from LHS
   std::string lstrip(std::string s, std::string matches);
 
   /// @brief Strips whitespace from RHS
-  /// @param s
-  /// @param matches
+  /// @param s - String that need to be stripped
+  /// @param matches - Pattern that needs to be removed
   /// @return stripped whitespace string from RHS
   std::string rstrip(std::string s, std::string matches);
 
   /// @brief Strips whitespace throughout the string
-  /// @param s
+  /// @param s - Original string to remove whitespace
   /// @return string without the whitespace
   std::string stripws(std::string s);
 
   /// @brief Splits the string into tokens as per the given delimiter
-  /// @param str
-  /// @param delim
+  /// @param str - Original string
+  /// @param delimiter - Delimiter on which the string needs to be tokenized
   /// @return vector of string tokens
   std::vector<std::string> split(const std::string &str, const char delimiter);
 
