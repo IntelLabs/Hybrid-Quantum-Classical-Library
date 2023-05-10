@@ -11,8 +11,8 @@ Contact: [Atul Kulkarni](mailto:atul.kulkarni@intel.com), [Nicolas Sawaya](mailt
 - Compile the library using the following instructions
 
   ```
-  $ git clone https://github.com/intel-sandbox/ applications.quantum.hybrid-quantum
-  $ cd applications.quantum.hybrid-quantum
+  $ git clone https://github.com/IntelLabs/Hybrid-Quantum-Classical-Library.git
+  $ cd Hybrid-Quantum-Classical-Library
   $ mkdir build
   $ cd build
   $ cmake ..
