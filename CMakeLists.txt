@@ -80,7 +80,7 @@ function(package_add_test_with_libraries TESTNAME FILES LIBRARIES TEST_WORKING_D
 endfunction()
 
 # Armadillo
-set(ARMADILLO_PREFIX armadillo-11.0.1)
+set(ARMADILLO_PREFIX armadillo-12.2.0)
 
 # Add ARMA_USE_WRAPPER
 add_definitions(-DARMA_USE_WRAPPER)
