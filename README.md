@@ -11,8 +11,8 @@ Contact: [Atul Kulkarni](mailto:atul.kulkarni@intel.com), [Nicolas Sawaya](mailt
 - Compile the library using the following instructions
 
   ```
-  $ git clone https://github.com/intel-sandbox/ applications.quantum.hybrid-quantum
-  $ cd applications.quantum.hybrid-quantum
+  $ git clone https://github.com/IntelLabs/Hybrid-Quantum-Classical-Library.git
+  $ cd Hybrid-Quantum-Classical-Library
   $ mkdir build
   $ cd build
   $ cmake ..
@@ -23,6 +23,7 @@ Contact: [Atul Kulkarni](mailto:atul.kulkarni@intel.com), [Nicolas Sawaya](mailt
 
   ```
   $ export OMP_NUM_THREADS=1 # For running w/ Intel(R) Quantum Simulator
+  $ export LD_LIBRARY_PATH=<path to HQCL project>/build/lib:$LD_LIBRARY_PATH
   $ ./intel-quantum-compiler -I<path to HQCL project>/build/include -L<path to HQCL project>/build/lib -larmadillo -lhqcl <path to examples in HQCL>/examples/excited_states_q2.cpp
   ```
 

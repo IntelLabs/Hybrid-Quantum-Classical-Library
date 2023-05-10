@@ -19,7 +19,6 @@ set(Tests_Srcs
     ${Root_Srcs}
     SymbolicOperator_Test.cpp
     SymbolicOperatorUtils_Test.cpp
-    # BoostTest_Test.cpp
 )
 
 # inc headers
@@ -28,11 +27,12 @@ list(APPEND INC_HEADERS
     SymbolicOperatorUtils.hpp
 )
 
-include_directories(${CMAKE_BINARY_DIR}/third_party/${ARMADILLO_PREFIX}/include)
 add_library(${LIB_NAME} SHARED ${Root_Srcs})
 set_target_properties(${LIB_NAME} PROPERTIES
                                   PUBLIC_HEADER "${INC_HEADERS}"
                                   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/${ARMADILLO_PREFIX}/include)
 
 file(COPY ${INC_HEADERS}
      DESTINATION ${CMAKE_BINARY_DIR}/include)
@@ -42,3 +42,4 @@ if(PACKAGE_TESTS)
   include_directories(${CMAKE_BINARY_DIR}/third_party/googletest-release-1.11.0/googletest/include)
   package_add_test_with_libraries(SymbolicOperator_Test "${Tests_Srcs}" ${LIB_NAME} "core")
 endif()
+
