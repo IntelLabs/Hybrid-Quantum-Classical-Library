@@ -23,6 +23,7 @@ Contact: [Atul Kulkarni](mailto:atul.kulkarni@intel.com), [Nicolas Sawaya](mailt
 
   ```
   $ export OMP_NUM_THREADS=1 # For running w/ Intel(R) Quantum Simulator
+  $ export LD_LIBRARY_PATH=<path to HQCL project>/build/lib:$LD_LIBRARY_PATH
   $ ./intel-quantum-compiler -I<path to HQCL project>/build/include -L<path to HQCL project>/build/lib -larmadillo -lhqcl <path to examples in HQCL>/examples/excited_states_q2.cpp
   ```
 
