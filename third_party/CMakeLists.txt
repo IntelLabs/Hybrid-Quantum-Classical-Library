@@ -18,7 +18,7 @@ if(BUILD_DLIB_LIB)
 endif()
 
 # Boost
-include(${CMAKE_CURRENT_LIST_DIR}/boost_graph.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/boost_headers.cmake)
 
 # GoogleTest
 if(PACKAGE_TESTS)
