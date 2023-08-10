@@ -299,7 +299,7 @@ TEST(ExpectationValueTests, Complete) {
         SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg, 2));
   }
   ASSERT_TRUE(expected.size() == actual.size());
-  for (int i = 0; i < expected.size(); ++i) {
+  for (size_t i = 0; i < expected.size(); ++i) {
     EXPECT_DOUBLE_EQ(expected[i], actual[i]);
   }
 
@@ -317,7 +317,7 @@ TEST(ExpectationValueTests, Complete) {
         SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_1, 2));
   }
   ASSERT_TRUE(expected_1.size() == actual_1.size());
-  for (int i = 0; i < expected_1.size(); ++i) {
+  for (size_t i = 0; i < expected_1.size(); ++i) {
     EXPECT_DOUBLE_EQ(expected_1[i], actual_1[i]);
   }
 
@@ -335,7 +335,7 @@ TEST(ExpectationValueTests, Complete) {
         SymbolicOperatorUtils::getExpectValSglPauli(pstr, ProbReg_2, 2));
   }
   ASSERT_TRUE(expected_2.size() == actual_2.size());
-  for (int i = 0; i < expected_2.size(); ++i) {
+  for (size_t i = 0; i < expected_2.size(); ++i) {
     EXPECT_DOUBLE_EQ(expected_2[i], actual_2[i]);
   }
 
@@ -348,7 +348,7 @@ TEST(ExpectationValueTests, Complete) {
   actual_3.push_back(
       SymbolicOperatorUtils::getExpectValSetOfPaulis(v_pstr, ProbReg_3, 2));
   ASSERT_TRUE(expected_3.size() == actual_3.size());
-  for (int i = 0; i < expected_3.size(); ++i) {
+  for (size_t i = 0; i < expected_3.size(); ++i) {
     EXPECT_DOUBLE_EQ(expected_3[i], actual_3[i]);
   }
 
@@ -364,7 +364,7 @@ TEST(ExpectationValueTests, Complete) {
   actual_4.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg_4, 2));
 
   ASSERT_TRUE(expected_4.size() == actual_4.size());
-  for (int i = 0; i < expected_4.size(); ++i) {
+  for (size_t i = 0; i < expected_4.size(); ++i) {
     EXPECT_DOUBLE_EQ(expected_4[i], actual_4[i]);
   }
 }
@@ -380,7 +380,7 @@ TEST(ConstructHamiltonianFromFileTests, Complete) {
   actual.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg, 2));
 
   ASSERT_TRUE(expected.size() == actual.size());
-  for (int i = 0; i < expected.size(); ++i) {
+  for (size_t i = 0; i < expected.size(); ++i) {
     EXPECT_DOUBLE_EQ(expected[i], actual[i]);
   }
 

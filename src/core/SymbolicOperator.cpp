@@ -41,7 +41,7 @@ void SymbolicOperator::addTerm(const pstring &inpp, ComplexDP k,
   if (check_validity) {
     // TODO: Add more validation
     // Iterate through set
-    pstring::iterator it = inpp.begin();
+    // pstring::iterator it = inpp.begin();
 
     // For this constructor, we do not allow >1 op on same qubit id (wouldn't
     // even know what order.) Instead, may use the other constructor
@@ -66,7 +66,7 @@ void SymbolicOperator::addTerm(const std::vector<std::string> &vecstr, ComplexDP
   SymbolicOperator newop;
   newop.addIdentTerm(); // Will be multiplied
 
-  for (int i = 0; i < vecstr.size(); i++) {
+  for (size_t i = 0; i < vecstr.size(); i++) {
 
     string rawstr(vecstr[i]);
     pstring p = {processLocCharString(rawstr)};
@@ -378,8 +378,8 @@ int SymbolicOperator::construct_hamiltonian_from_file(std::string filename) {
       if (pauliterm.size() > 1) {
         std::vector<std::string> terms = split(pauliterm[0], ' ');
         for (auto &t : terms) {
-          if (t.size() > 2 || (t.size() > 1 && ((int)t[1] - '0') < 0) ||
-              (t.size() > 1 && (((int)t[1] - '0') > numqbits - 1)) ||
+          if (t.size() > 2 || (t.size() > 1 && ((size_t)t[1] - '0') < 0) ||
+              (t.size() > 1 && (((size_t)t[1] - '0') > numqbits - 1)) ||
               (t.size() == 1 && t[0] != 'I') ||
               (t.size() > 1 && t[0] != 'X' && t[0] != 'Y' && t[0] != 'Z' &&
                t[0] != 'I')) {
@@ -388,10 +388,10 @@ int SymbolicOperator::construct_hamiltonian_from_file(std::string filename) {
 
           // handle pauli operators X, Y & Z
           if (t.size() > 1) {
-            inp_id.insert({(int)t[1] - '0', t[0]});
+            inp_id.insert({(size_t)t[1] - '0', t[0]});
           } else {
             // handle identity
-            for (auto qno = 0; qno < numqbits; qno++) {
+            for (auto qno = (size_t)0; qno < numqbits; qno++) {
               inp_id.insert({qno, t[0]});
             }
           }
