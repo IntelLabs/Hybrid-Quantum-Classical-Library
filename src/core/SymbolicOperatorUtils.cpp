@@ -123,8 +123,8 @@ vector<int> SymbolicOperatorUtils::getGroupsQWC(const Vec2DMat &qwcgraph) {
 
   // Transfer Vec2DMat to an edge list
   vector<Edge> edges;
-  for (int i = 0; i < qwcgraph.size(); i++) {
-    for (int j = 0; j < i; j++) {
+  for (size_t i = 0; i < qwcgraph.size(); i++) {
+    for (size_t j = 0; j < i; j++) {
       if (qwcgraph[i][j] == 1) {
         edges.push_back(Edge(i, j));
       }
@@ -137,7 +137,7 @@ vector<int> SymbolicOperatorUtils::getGroupsQWC(const Vec2DMat &qwcgraph) {
   std::vector<vertices_size_type> color_vec(boost::num_vertices(g));
   boost::iterator_property_map<vertices_size_type *, vertex_index_map> color(
       &color_vec.front(), get(boost::vertex_index, g));
-  vertices_size_type num_colors = sequential_vertex_coloring(g, color);
+  sequential_vertex_coloring(g, color);
 
   return color_vec;
 }
@@ -257,7 +257,7 @@ QWCMap SymbolicOperatorUtils::getQubitwiseCommutationGroups(
   Vec2DMat qwcmat = SymbolicOperatorUtils::qubitwiseCommutation(symbop);
   std::vector<int> coloring = SymbolicOperatorUtils::getGroupsQWC(qwcmat);
   QWCMap qbtwise_comm_groups;
-  for (auto pos = 0; pos < coloring.size(); pos++) {
+  for (size_t pos = 0; pos < coloring.size(); pos++) {
     const auto ord_list = symbop.getOrderedPStringList();
     qbtwise_comm_groups[coloring[pos]].emplace(ord_list[pos]);
   }
