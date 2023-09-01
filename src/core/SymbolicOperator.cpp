@@ -349,7 +349,7 @@ int SymbolicOperator::construct_hamiltonian_from_file(std::string filename) {
 
   std::string line;
   bool first_line = false;
-  unsigned long numqbits;
+  unsigned long numqbits = 0UL;
   try {
     while (std::getline(ifs, line)) {
 
