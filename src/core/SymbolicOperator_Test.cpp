@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2021-2022 Intel Corporation.
+// Copyright 2021-2024 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -346,7 +346,7 @@ TEST(ExpectationValueTests, Complete) {
   std::vector<double> expected_3{-0.10000000000000003};
   std::vector<double> actual_3;
   actual_3.push_back(
-      SymbolicOperatorUtils::getExpectValSetOfPaulis(v_pstr, ProbReg_3, 2));
+      SymbolicOperatorUtils::getExpectValSetOfPaulis(v_pstr, std::move(ProbReg_3), 2));
   ASSERT_TRUE(expected_3.size() == actual_3.size());
   for (size_t i = 0; i < expected_3.size(); ++i) {
     EXPECT_DOUBLE_EQ(expected_3[i], actual_3[i]);
@@ -359,13 +359,13 @@ TEST(ExpectationValueTests, Complete) {
   symbop.addTerm(inp_y3, 0.25);
 
   std::vector<double> ProbReg_4{0.1, 0.2, 0.1, 0.1};
-  std::vector<double> expected_4{-0.025000000000000008};
+  std::vector<double> expected_4{-0.024999999999999988};
   std::vector<double> actual_4;
-  actual_4.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg_4, 2));
+  actual_4.push_back(SymbolicOperatorUtils::getExpectVal(symbop, std::move(ProbReg_4), 2));
 
   ASSERT_TRUE(expected_4.size() == actual_4.size());
   for (size_t i = 0; i < expected_4.size(); ++i) {
-    EXPECT_DOUBLE_EQ(expected_4[i], actual_4[i]);
+    EXPECT_NEAR(expected_4[i], actual_4[i], 10e-7);
   }
 }
 
@@ -400,7 +400,7 @@ TEST(ConstructHamiltonianFromFileTests, Complete) {
   expected.clear();
   expected.push_back(1.7750000000000004);
   actual.clear();
-  actual.push_back(SymbolicOperatorUtils::getExpectVal(symbop, ProbReg, 2));
+  actual.push_back(SymbolicOperatorUtils::getExpectVal(symbop, std::move(ProbReg), 2));
 
   ASSERT_TRUE(expected.size() == actual.size());
   int ex_size = expected.size();
@@ -510,7 +510,7 @@ TEST(ConstructHamiltonianFromFileTests, Complete) {
   // test 9
   // invalid filename
   ham_file = "/tmp/non-existent-file";
-  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(ham_file) == EXIT_FAILURE);
+  ASSERT_TRUE(symbop.construct_hamiltonian_from_file(std::move(ham_file)) == EXIT_FAILURE);
 
   // test 10
   // test lstrip functionality

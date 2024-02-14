@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2022-2023 Intel Corporation.
+// Copyright 2022-2024 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -292,7 +292,7 @@ int main() {
 
   // QWC
   QWCMap m_qwc_groups_orig_ham =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(H_symbop, N);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(H_symbop);
   std::cout << "Number of Qubitwise Commutation (QWC) Groups for original "
                "hamiltonian: "
             << m_qwc_groups_orig_ham.size() << std::endl;
@@ -358,7 +358,7 @@ int main() {
 
   // QWC
   QWCMap m_qwc_groups_folded_ham =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(H_fold_symbop, N);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(H_fold_symbop);
   std::cout << "Number of Qubitwise Commutation (QWC) Groups for folded "
                "hamiltonian : "
             << m_qwc_groups_folded_ham.size() << std::endl;
@@ -410,7 +410,7 @@ int main() {
 
   // QWC
   QWCMap m_qwc_groups_folded_ham_1 =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(H_fold_symbop_1, N);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(H_fold_symbop_1);
   std::cout << "Number of Qubitwise Commutation (QWC) Groups for folded "
                "hamiltonian : "
             << m_qwc_groups_folded_ham_1.size() << std::endl;
@@ -463,7 +463,7 @@ int main() {
 
   // QWC
   QWCMap m_qwc_groups_folded_ham_2 =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(H_fold_symbop_2, N);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(H_fold_symbop_2);
   std::cout << "Number of Qubitwise Commutation (QWC) Groups for folded "
                "hamiltonian : "
             << m_qwc_groups_folded_ham_2.size() << std::endl;

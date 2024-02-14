@@ -1,4 +1,4 @@
-set(BOOST_PREFIX "boost_headers_1_82_0")
+set(BOOST_PREFIX "boost_headers_1_84_0")
 set(BOOST_URL ${CMAKE_CURRENT_SOURCE_DIR}/${BOOST_PREFIX}.tar.gz)
 set(BOOST_EXTRACT_DIR ${CMAKE_BINARY_DIR}/third_party)
 set(BOOST_INCLUDE_DIR ${BOOST_EXTRACT_DIR}/boost)

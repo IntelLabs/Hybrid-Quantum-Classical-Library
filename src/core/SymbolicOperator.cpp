@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2021-2022 Intel Corporation.
+// Copyright 2021-2024 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -69,7 +69,7 @@ void SymbolicOperator::addTerm(const std::vector<std::string> &vecstr, ComplexDP
   for (size_t i = 0; i < vecstr.size(); i++) {
 
     string rawstr(vecstr[i]);
-    pstring p = {processLocCharString(rawstr)};
+    pstring p = {processLocCharString(std::move(rawstr))};
     SymbolicOperator locop;
     locop.addTerm(p);
 
@@ -378,7 +378,7 @@ int SymbolicOperator::construct_hamiltonian_from_file(std::string filename) {
       if (pauliterm.size() > 1) {
         std::vector<std::string> terms = split(pauliterm[0], ' ');
         for (auto &t : terms) {
-          if (t.size() > 2 || (t.size() > 1 && ((size_t)t[1] - '0') < 0) ||
+          if (t.size() > 2 ||
               (t.size() > 1 && (((size_t)t[1] - '0') > numqbits - 1)) ||
               (t.size() == 1 && t[0] != 'I') ||
               (t.size() > 1 && t[0] != 'X' && t[0] != 'Y' && t[0] != 'Z' &&

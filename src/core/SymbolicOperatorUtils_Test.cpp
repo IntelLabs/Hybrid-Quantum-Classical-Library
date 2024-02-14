@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2021-2022 Intel Corporation.
+// Copyright 2021-2024 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -128,7 +128,7 @@ TEST(QWCTests, Complete) {
   EXPECT_EQ(coloring_small, gold_coloring_small);
 
   qwc_groups_mapping =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(op, num_qubits);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(op);
   ASSERT_TRUE(qwc_groups_mapping.size() == gold_qwc_groups_mapping.size());
   EXPECT_EQ(qwc_groups_mapping, gold_qwc_groups_mapping);
 
@@ -203,7 +203,7 @@ TEST(QWCTests, Complete) {
   EXPECT_EQ(coloring, gold_coloring);
 
   qwc_groups_mapping =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(orig_H, num_qubits);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(orig_H);
   std::cout << "Qubitwise Commutation(QWC) Groups:" << qwc_groups_mapping
             << std::endl;
   ASSERT_TRUE(qwc_groups_mapping.size() == gold_qwc_groups_mapping.size());
@@ -301,7 +301,7 @@ TEST(QWCTests, Complete) {
   actual_cost = 0.0;
 
   qwc_groups_mapping =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(op, num_qubits);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(op);
   std::cout << "Qubitwise Commutation(QWC) Groups:" << qwc_groups_mapping
             << std::endl;
   ASSERT_TRUE(qwc_groups_mapping.size() == gold_qwc_groups_mapping.size());
@@ -444,7 +444,7 @@ TEST(QWCTests, Complete) {
           op.op_sum[pstr].real() *
           SymbolicOperatorUtils::getExpectValSglPauli(
               pstr, precomputed_pauli_str_probs[pstr], num_qubits);
-      EXPECT_EQ(pauli_str_cost, expected_pauli_str_cost[pstr]);
+      EXPECT_DOUBLE_EQ(pauli_str_cost, expected_pauli_str_cost[pstr]);
     }
   }
 
@@ -485,7 +485,7 @@ TEST(QWCTests, Complete) {
   EXPECT_EQ(coloring, gold_coloring);
 
   qwc_groups_mapping =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(op, num_qubits);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(op);
   std::cout << "Qubitwise Commutation(QWC) Groups:" << qwc_groups_mapping
             << std::endl;
   ASSERT_TRUE(qwc_groups_mapping.size() == gold_qwc_groups_mapping.size());
@@ -552,7 +552,7 @@ TEST(QWCTests, Complete) {
   EXPECT_EQ(coloring, gold_coloring);
 
   qwc_groups_mapping =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(orig_H, num_qubits);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(orig_H);
   std::cout << "Qubitwise Commutation(QWC) Groups:" << qwc_groups_mapping
             << std::endl;
   ASSERT_TRUE(qwc_groups_mapping.size() == gold_qwc_groups_mapping.size());
@@ -604,7 +604,7 @@ TEST(QWCTests, Complete) {
   EXPECT_EQ(coloring, gold_coloring);
 
   qwc_groups_mapping = SymbolicOperatorUtils::getQubitwiseCommutationGroups(
-      folded_H, num_qubits);
+      folded_H);
   std::cout << "Qubitwise Commutation(QWC) Groups:" << qwc_groups_mapping
             << std::endl;
   ASSERT_TRUE(qwc_groups_mapping.size() == gold_qwc_groups_mapping.size());
