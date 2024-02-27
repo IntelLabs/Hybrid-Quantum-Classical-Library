@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2022-2023 Intel Corporation.
+// Copyright 2022-2024 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -188,7 +188,7 @@ int main() {
 
   // QWC
   QWCMap m_qwc_groups =
-      SymbolicOperatorUtils::getQubitwiseCommutationGroups(so, N);
+      SymbolicOperatorUtils::getQubitwiseCommutationGroups(so);
   std::cout << "Number of Qubitwise Commutation (QWC) Groups : "
             << m_qwc_groups.size() << std::endl;
   std::cout << "Qubitwise Commutation (QWC) Groups: " << m_qwc_groups

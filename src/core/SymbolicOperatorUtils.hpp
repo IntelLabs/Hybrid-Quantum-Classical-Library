@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2021-2022 Intel Corporation.
+// Copyright 2021-2024 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -29,8 +29,6 @@
 namespace hybrid {
 namespace quantum {
 namespace core {
-
-enum class METHOD { DEFAULT = 0, QWC };
 
 const double FP_PI = 3.14159265359;
 const double FP_2PI = 6.28318530718;
@@ -72,13 +70,11 @@ public:
   /// @param symbop - SymbolicOperator object
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
   /// @param num_qubits - Number of qubits
-  /// @param eps - Desired precision (epsilon)
   /// @param method - Method based on Qubit properties
   /// @return double
   ///
   static double getExpectVal(SymbolicOperator &symbop,
-                             const std::vector<double> ProbReg, int num_qubits,
-                             double eps = 0.0, METHOD method = METHOD::DEFAULT);
+                             const std::vector<double> ProbReg, int num_qubits);
 
   ///
   /// @brief Get the expectation value for a list of pauli strings/objects
@@ -86,12 +82,11 @@ public:
   /// @param v_pstr - List of pauli operators
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
   /// @param num_qubits - Number of qubits
-  /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
   static double getExpectValSetOfPaulis(const std::vector<pstring> &v_pstr,
                                         const std::vector<double> ProbReg,
-                                        int num_qubits, double eps = 0.0);
+                                        int num_qubits);
 
   ///
   /// @brief Get the expectation value for a set of pauli strings/objects
@@ -100,13 +95,12 @@ public:
   /// @param s_pstr - Set of pauli operators
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
   /// @param num_qubits - Number of qubits
-  /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
   static double getExpectValSetOfPaulis(SymbolicOperator &symbop,
                                         const std::set<pstring> &s_pstr,
                                         const std::vector<double> ProbReg,
-                                        int num_qubits, double eps = 0.0);
+                                        int num_qubits);
 
   ///
   /// @brief Get the expectation value of single pauli string/object
@@ -114,12 +108,11 @@ public:
   /// @param pstr - Pauli String
   /// @param ProbReg - Probabilities obtained from the state vector amplitudes
   /// @param num_qubits - Number of qubits
-  /// @param eps - Desired precision (epsilon)
   /// @return double
   ///
   static double getExpectValSglPauli(const pstring &pstr,
                                      const std::vector<double> ProbReg,
-                                     int num_qubits, double eps = 0.0);
+                                     int num_qubits);
 
   /// @brief Applies basis change to a single Pauli string. For the missing
   /// qubit in the pauli term, first encountered
@@ -142,10 +135,8 @@ public:
 
   /// @brief Get the qubitwise commutating groups
   /// @param symbop symbolic operator object
-  /// @param num_qbits number of qubits
   /// @return map of qubitwise commutation groups
-  static QWCMap getQubitwiseCommutationGroups(const SymbolicOperator &symbop,
-                                              int num_qbits);
+  static QWCMap getQubitwiseCommutationGroups(const SymbolicOperator &symbop);
 
   /// @brief Get the folded hamiltonian derived from the original hamiltonian
   /// @param symbop SymbolicOperator object of the original hamiltonian

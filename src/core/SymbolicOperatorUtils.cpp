@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2021-2022 Intel Corporation.
+// Copyright 2021-2024 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -162,7 +162,7 @@ SymbolicOperatorUtils::getCharString_pstring(const pstring &inp_pstring) {
 double
 SymbolicOperatorUtils::getExpectValSglPauli(const pstring &pstr,
                                             const std::vector<double> ProbReg,
-                                            int num_qbits, double eps) {
+                                            int num_qbits) {
   arma::Row<double> I = {1, 1};
   arma::Row<double> Z = {1, -1};
   arma::Row<double> vR = {1}; // To maintain the shape of the matrix
@@ -189,7 +189,7 @@ SymbolicOperatorUtils::getExpectValSglPauli(const pstring &pstr,
 
 double SymbolicOperatorUtils::getExpectValSetOfPaulis(
     const std::vector<pstring> &v_pstr, const std::vector<double> ProbReg,
-    int num_qbits, double eps) {
+    int num_qbits) {
   double exp_val = 0.0;
 
   for (const auto &pstr : v_pstr) {
@@ -201,7 +201,7 @@ double SymbolicOperatorUtils::getExpectValSetOfPaulis(
 
 double SymbolicOperatorUtils::getExpectValSetOfPaulis(
     SymbolicOperator &symbop, const std::set<pstring> &s_pstr,
-    const std::vector<double> ProbReg, int num_qbits, double eps) {
+    const std::vector<double> ProbReg, int num_qbits) {
   double exp_val = 0.0;
 
   for (const auto &pstr : s_pstr) {
@@ -214,8 +214,7 @@ double SymbolicOperatorUtils::getExpectValSetOfPaulis(
 
 double SymbolicOperatorUtils::getExpectVal(SymbolicOperator &symbop,
                                            const std::vector<double> ProbReg,
-                                           int num_qbits, double eps,
-                                           METHOD method) {
+                                           int num_qbits) {
   double exp_val = 0.0;
 
   for (const auto &pstr : symbop.getOrderedPStringList()) {
@@ -252,7 +251,7 @@ void SymbolicOperatorUtils::applyBasisChange(
 }
 
 QWCMap SymbolicOperatorUtils::getQubitwiseCommutationGroups(
-    const SymbolicOperator &symbop, int num_qbits) {
+    const SymbolicOperator &symbop) {
 
   Vec2DMat qwcmat = SymbolicOperatorUtils::qubitwiseCommutation(symbop);
   std::vector<int> coloring = SymbolicOperatorUtils::getGroupsQWC(qwcmat);
@@ -275,7 +274,7 @@ void SymbolicOperatorUtils::applyBasisChange(
     for (const auto &pstr : s_pstr) {
       symbop.addTerm(pstr);
     }
-    QWCMap qwc_group_mapping = getQubitwiseCommutationGroups(symbop, num_qbits);
+    QWCMap qwc_group_mapping = getQubitwiseCommutationGroups(symbop);
     if (qwc_group_mapping.size() > 1) {
       throw std::logic_error("Provided pauli strings does not qubitwise "
                              "commute. Basis change cannot be applied.");

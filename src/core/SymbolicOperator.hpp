@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 // INTEL CONFIDENTIAL
 //
-// Copyright 2021-2022 Intel Corporation.
+// Copyright 2021-2024 Intel Corporation.
 //
 // This software and the related documents are Intel copyrighted materials, and
 // your use of them is governed by the express license under which they were
@@ -105,37 +105,17 @@ public:
   ///
   ///@brief Remove all terms
   ///
-  ///
   void removeAllTerms();
 
   ///
   ///@brief Construct Symbolic Operator object from a file
-  ///
   ///
   int construct_hamiltonian_from_file(std::string filename);
 
   ///
   ///@brief Construct a new Symbolic Operator object
   ///
-  ///
   SymbolicOperator() = default;
-
-  ///
-  ///@brief Construct a new Symbolic Operator object
-  ///
-  ///
-  SymbolicOperator(const SymbolicOperator &) = default;
-
-  ///
-  ///@brief Overloading of assignment operator
-  ///
-  ///@param inp - SymbolicOperator object
-  ///@return SymbolicOperator&
-  ///
-  SymbolicOperator &operator=(const SymbolicOperator &inp) {
-    this->op_sum = inp.op_sum;
-    return *this;
-  }
 
   ///
   ///@brief Overloaded '+' to add two SymbolicOperator objects
