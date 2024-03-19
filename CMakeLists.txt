@@ -15,7 +15,7 @@
 # ------------------------------------------------------------------------------
 
 # Check the version of CMake.
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.24)
 
 # ##############################################################################
 # Define our package information.
@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.1)
 
 set(PACKAGE_VERSION_MAJOR "0")
 set(PACKAGE_VERSION_MINOR "4")
-set(PACKAGE_VERSION_PATCH "3")
+set(PACKAGE_VERSION_PATCH "4")
 set(PACKAGE_NAME "HybridQuantumClassicalLibrary")
 set(PACKAGE_DESCRIPTION
     "A high-level library to build Hybrid Quantum-Classical algorithms.")
@@ -32,7 +32,7 @@ set(PACKAGE_AUTHOR_EMAIL "AQUA Group at Intel Corporation")
 
 project(
   hybrid-quantum-classical-library
-  VERSION 0.4.3
+  VERSION 0.4.4
   LANGUAGES CXX)
 
 # ##############################################################################
