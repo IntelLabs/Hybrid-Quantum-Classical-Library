@@ -21,8 +21,8 @@ set_target_properties(
                          LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 target_include_directories(
-  ${LIB_NAME}
-  PUBLIC ${CMAKE_BINARY_DIR}/third_party/${ARMADILLO_PREFIX}/include)
+  ${LIB_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/${ARMADILLO_PREFIX}/include
+                     ${CMAKE_BINARY_DIR}/third_party)
 
 file(COPY ${INC_HEADERS} DESTINATION ${CMAKE_BINARY_DIR}/include)
 
